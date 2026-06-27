@@ -111,7 +111,7 @@ Columns:
 - `pharmacy_id uuid not null references pharmacies(id)`
 - `item_id uuid not null references items(id)`
 - `requested_by uuid not null references profiles(id)`
-- `assigned_to uuid references profiles(id)`
+- `assigned_to uuid references profiles(id)` — snapshot of the handling rep at creation time; `sales_rep_assignments` is the authority for sales-rep visibility (see `docs/DECISIONS/004-rls-strategy.md`)
 - `quantity numeric(12,2) default 1`
 - `status text not null default 'missing' check (status in ('missing','in_purchase','fulfilled','cancelled'))`
 - `priority text default 'normal' check (priority in ('low','normal','high','urgent'))`
@@ -181,6 +181,7 @@ Indexes:
 Inputs:
 
 - `p_request_id uuid`
+- `p_expected_status text`
 - `p_new_status text`
 - `p_note text default null`
 
@@ -190,7 +191,7 @@ Responsibilities:
 - Verify tenant access.
 - Verify role permission.
 - Verify valid transition.
-- Update request status.
+- Update request status with a guarded compare-and-set (`update ... where status = p_expected_status`) so a concurrent transition fails cleanly instead of double-applying.
 - Set `fulfilled_at` or `cancelled_at` when relevant.
 - Insert row into `shortage_status_history`.
 
@@ -201,7 +202,7 @@ Responsibilities:
 - Validate item belongs to company.
 - Validate pharmacy belongs to company.
 - Create request with status `missing`.
-- Optionally assign sales rep automatically if one assignment exists.
+- Auto-assign a sales rep only when exactly one active `sales_rep_assignments` row exists for the pharmacy; otherwise leave `assigned_to` null.
 - Insert initial status history row.
 
 ## 4. RLS requirements
@@ -216,7 +217,11 @@ Enable RLS on:
 - shortage_status_history
 - sales_rep_assignments
 
-Access rules are defined in `docs/PERMISSIONS.md`.
+Every table above is default-deny: with RLS enabled and no matching policy, access is denied. Add access only through explicit role-scoped policies.
+
+Policies read the user's `company_id` and `role` from JWT claims (`auth.jwt()`), not from a `profiles` query, to avoid recursion on `profiles` and a per-row lookup elsewhere. Cross-tenant access for `super_admin` goes through one audited helper.
+
+Access rules are defined in `docs/PERMISSIONS.md`. The enforcement strategy is defined in `docs/DECISIONS/004-rls-strategy.md`.
 
 ## 5. Common bottlenecks to avoid
 

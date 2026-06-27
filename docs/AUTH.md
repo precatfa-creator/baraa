@@ -69,6 +69,8 @@ MVP recommendation:
 - No public signup.
 - Admin creates users manually in Supabase or via admin screen.
 
+A tenant-bound profile is created by an admin server action using the service role key. A trigger on `auth.users` cannot create the profile alone because it does not know the target `company_id`/`pharmacy_id`/`role`; the admin action supplies those and inserts the `profiles` row in the same flow that creates the auth user. After creation, the user's `company_id` and `role` are written to JWT claims so RLS can read them (see `docs/DECISIONS/004-rls-strategy.md`).
+
 Future:
 
 - Company admin invites users.

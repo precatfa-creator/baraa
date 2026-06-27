@@ -63,18 +63,19 @@ Tasks:
 3. Add constraints/checks.
 4. Add indexes from `docs/DATABASE.md`.
 5. Enable RLS on all tenant tables.
-6. Create helper functions to get current profile/role/company.
-7. Add RLS policies.
+6. Read current company/role from JWT claims, not from a `profiles` query inside policies (see `docs/DECISIONS/004-rls-strategy.md`).
+7. Add default-deny RLS policies, with `super_admin` cross-tenant access via one audited helper.
 8. Add workflow functions:
    - `create_shortage_request`
-   - `transition_shortage_status`
+   - `transition_shortage_status` (guarded compare-and-set on status)
 9. Add seed data for one company, one pharmacy, one pharmacist, one sales rep, sample items.
-10. Test cross-company and role access.
+10. Add a seeded policy-test suite (pgTAP or equivalent) for cross-company and role access.
 
 Exit criteria:
 
 - Schema exists.
 - RLS blocks unauthorized access.
+- Policy-test suite passes (per `docs/DECISIONS/004-rls-strategy.md`).
 - Workflow functions create history.
 
 ## Phase 3 — Auth and protected app
