@@ -12,7 +12,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 |---|---|---|
 | 0 | Documentation & decisions | ✅ |
 | 1 | Project setup | ✅ |
-| 2 | Supabase database foundation | 🟡 |
+| 2 | Supabase database foundation | ✅ |
 | 3 | Auth & protected app | ⬜ |
 | 4 | Item master data | ⬜ |
 | 5 | Shortage workflow | ⬜ |
@@ -21,7 +21,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 8 | Testing, security, deployment | ⬜ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 2 in progress — all SQL written (schema, JWT hook, RLS, workflow functions, seed, pgTAP tests). **Blocked on a Supabase project** to apply (`db push`) and run the policy tests. See "Phase 2 handoff" below.
+**Now:** Phase 2 complete — migrations pushed to the live Supabase project, seed loaded, **11/11 policy tests pass** (`npm run db:test`). Next up: Phase 3 (auth + protected routing). ⚠️ One manual prerequisite for Phase 3 login — see "Phase 2 handoff".
 
 ## Decisions locked (read before coding)
 
@@ -51,9 +51,9 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 - [x] Basic AppShell (header + RTL nav)
 - [x] **Exit:** build passes; `/login` + `/dashboard` render RTL Arabic; `/` → `/dashboard`
 
-## Phase 2 — Supabase database foundation 🟡
+## Phase 2 — Supabase database foundation ✅
 
-- [ ] Create Supabase project (you) → share project-ref + DB password
+- [x] Create Supabase project (`ragzebvtqekhzwqccasv`, eu-west-1)
 - [x] Migrations for core tables (`supabase/migrations/0001_core_schema`)
 - [x] Constraints / checks
 - [x] Indexes from `docs/DATABASE.md`
@@ -63,16 +63,25 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 - [x] Workflow functions: `create_shortage_request`, `transition_shortage_status` (guarded compare-and-set) — `0004`
 - [x] Seed data: company, pharmacy, admin/pharmacist/sales_rep, items, assignment — `seed.sql`
 - [x] Policy-test suite (pgTAP) — `supabase/tests/rls_policies_test.sql` (11 assertions)
-- [ ] Apply to project (`npx supabase db push`) + enable JWT hook
-- [ ] **Exit:** RLS blocks unauthorized access; **policy tests pass**; workflow functions create history
+- [x] Apply to project — migrations pushed via session pooler; seed loaded
+- [x] **Exit:** RLS blocks unauthorized access; **11/11 policy tests pass**; workflow functions write history
+- [ ] ⚠️ Enable the JWT access-token hook in the dashboard (manual — Phase 3 prerequisite)
 
-### Phase 2 handoff — what I need from you
+### Phase 2 handoff — one manual step before Phase 3
 
-1. Create a free project at https://supabase.com (or pick an existing empty one).
-2. Share: **project ref** (the `abcd…` in the project URL) and the **database password** you set.
-3. I then run: `npx supabase link --project-ref <ref>` → `npx supabase db push` → seed → policy tests, and enable the access-token hook (Auth > Hooks → `public.custom_access_token_hook`, already declared in `config.toml`).
+The hook **function** is deployed, but Supabase Auth won't call it until you toggle it on
+(it's a GoTrue setting, not SQL, so it can't be pushed from here):
 
-> Tests run by simulating each role via `request.jwt.claims` — no Docker needed; they execute against the linked DB.
+> Dashboard → **Authentication → Hooks → Customize Access Token (JWT) Claims** →
+> enable, select schema `public`, function `custom_access_token_hook`.
+
+Until that's on, logins won't carry `company_id`/`role` claims and every RLS policy will
+deny — so Phase 3 login work depends on it.
+
+**Reproducible DB workflow** (set `CONN` to the session-pooler URL first):
+`npm run db:push` · `npm run db:seed` · `npm run db:test`
+
+> Tests simulate each role via `request.jwt.claims` — no Docker; they run against the live DB.
 
 ## Phase 3 — Auth & protected app ⬜
 
@@ -153,6 +162,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 
 ## Changelog
 
+- 2026-06-27 — Phase 2 closed; migrations pushed to live project (eu-west-1), seed loaded, 11/11 RLS/workflow policy tests pass via Docker-free `npm run db:test`. Manual step left: enable the Auth JWT hook in the dashboard.
 - 2026-06-27 — Phase 2 started; full DB-as-code written (schema/JWT hook/RLS/functions/seed/pgTAP). Awaiting a Supabase project to apply + test.
 - 2026-06-27 — Phase 1 closed; Next 16 + Tailwind v4 + shadcn scaffolded at repo root, RTL Arabic shell, route groups, build + runtime smoke green.
 - 2026-06-27 — Phase 0 closed; decisions `001`–`004` locked; progress file created.

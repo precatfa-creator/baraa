@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:push": "supabase db push",
+    "db:seed": "node scripts/run-sql.mjs supabase/seed.sql",
+    "db:test": "node scripts/run-sql.mjs scripts/pgtap-bootstrap.sql supabase/tests/rls_policies_test.sql"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -27,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "pg": "^8.22.0",
     "supabase": "^2.108.0",
     "tailwindcss": "^4",
     "typescript": "^5"

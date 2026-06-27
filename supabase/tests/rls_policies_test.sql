@@ -51,6 +51,7 @@ insert into jwt values
   ('repA2','{"sub":"a0000000-0000-0000-0000-000000000004","user_role":"sales_rep","company_id":"a1111111-1111-1111-1111-111111111111","is_active":true}'),
   ('pharmB','{"sub":"b0000000-0000-0000-0000-000000000001","user_role":"pharmacist","company_id":"b1111111-1111-1111-1111-111111111111","pharmacy_id":"b2222222-2222-2222-2222-222222222222","is_active":true}'),
   ('super','{"sub":"00000000-0000-0000-0000-000000000009","user_role":"super_admin","is_active":true}');
+grant select on jwt to authenticated; -- the claim lookup runs while role=authenticated
 
 -- ---- READ isolation ----
 set local role authenticated;
