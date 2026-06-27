@@ -11,7 +11,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | Phase | Title | Status |
 |---|---|---|
 | 0 | Documentation & decisions | ✅ |
-| 1 | Project setup | ⬜ |
+| 1 | Project setup | ✅ |
 | 2 | Supabase database foundation | ⬜ |
 | 3 | Auth & protected app | ⬜ |
 | 4 | Item master data | ⬜ |
@@ -21,7 +21,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 8 | Testing, security, deployment | ⬜ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 0 complete. Next up: Phase 1 (scaffold the Next.js app).
+**Now:** Phase 1 complete (app scaffolds, builds, RTL pages render). Next up: Phase 2 (Supabase schema, RLS, workflow functions).
 
 ## Decisions locked (read before coding)
 
@@ -40,16 +40,16 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 - [x] No public signup; Arabic UI / English DB values confirmed
 - [x] RLS strategy decided (`004`)
 
-## Phase 1 — Project setup ⬜
+## Phase 1 — Project setup ✅
 
-- [ ] Initialize Next.js + TypeScript
-- [ ] Install Tailwind CSS
-- [ ] Install shadcn/ui
-- [ ] Arabic RTL root layout (`lang=ar`, `dir=rtl`)
-- [ ] Add Tajawal/Cairo font
-- [ ] Route groups: `(auth)`, `(dashboard)`
-- [ ] Basic AppShell
-- [ ] **Exit:** local app runs; `/login` and `/dashboard` render; layout is RTL
+- [x] Initialize Next.js + TypeScript (Next 16, src/, `@/*` alias)
+- [x] Install Tailwind CSS (v4)
+- [x] Install shadcn/ui (button + `lib/utils` seeded)
+- [x] Arabic RTL root layout (`lang=ar`, `dir=rtl`)
+- [x] Add Tajawal font (owns `--font-sans` so shadcn base renders Arabic)
+- [x] Route groups: `(auth)/login`, `(dashboard)/dashboard`
+- [x] Basic AppShell (header + RTL nav)
+- [x] **Exit:** build passes; `/login` + `/dashboard` render RTL Arabic; `/` → `/dashboard`
 
 ## Phase 2 — Supabase database foundation ⬜
 
@@ -144,4 +144,5 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 
 ## Changelog
 
+- 2026-06-27 — Phase 1 closed; Next 16 + Tailwind v4 + shadcn scaffolded at repo root, RTL Arabic shell, route groups, build + runtime smoke green.
 - 2026-06-27 — Phase 0 closed; decisions `001`–`004` locked; progress file created.
