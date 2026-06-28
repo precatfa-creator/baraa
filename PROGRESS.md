@@ -4,7 +4,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 
 **Legend:** ⬜ not started · 🟡 in progress · ✅ done · ⛔ blocked
 
-**Last updated:** 2026-06-27
+**Last updated:** 2026-06-28
 
 ## Status at a glance
 
@@ -13,7 +13,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 0 | Documentation & decisions | ✅ |
 | 1 | Project setup | ✅ |
 | 2 | Supabase database foundation | ✅ |
-| 3 | Auth & protected app | ⬜ |
+| 3 | Auth & protected app | ✅ |
 | 4 | Item master data | ⬜ |
 | 5 | Shortage workflow | ⬜ |
 | 6 | Dashboard & realtime | ⬜ |
@@ -21,7 +21,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 8 | Testing, security, deployment | ⬜ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 2 complete — migrations pushed to the live Supabase project, seed loaded, **11/11 policy tests pass** (`npm run db:test`). Next up: Phase 3 (auth + protected routing). ⚠️ One manual prerequisite for Phase 3 login — see "Phase 2 handoff".
+**Now:** Phase 3 complete — login, route protection, profile gate, and logout verified end-to-end against the live project (JWT hook on, claims confirmed). Next up: Phase 4 (item master data).
 
 ## Decisions locked (read before coding)
 
@@ -83,17 +83,20 @@ deny — so Phase 3 login work depends on it.
 
 > Tests simulate each role via `request.jwt.claims` — no Docker; they run against the live DB.
 
-## Phase 3 — Auth & protected app ⬜
+## Phase 3 — Auth & protected app ✅
 
-- [ ] Supabase browser + server clients
-- [ ] Login form
-- [ ] Protected route middleware / server checks
-- [ ] Load active profile after login
-- [ ] Role-based navigation
-- [ ] Inactive / missing-profile error states
-- [ ] Logout
-- [ ] Admin server action to create a tenant-bound profile (service role) — `docs/AUTH.md`
-- [ ] **Exit:** each test user logs in; unauthorized redirected; inactive users blocked
+- [x] Supabase browser + server clients (`src/lib/supabase/{client,server}.ts`)
+- [x] Login form (`(auth)/login`, server action in `(auth)/actions.ts`)
+- [x] Protected route guard (`src/proxy.ts` — Next 16 proxy convention; refreshes session)
+- [x] Load active profile after login (`src/lib/auth.ts`, RLS self-read)
+- [x] Role-based navigation (dashboard layout shows name + role label)
+- [x] Inactive / missing-profile error states (login action + layout both gate)
+- [x] Logout (server action)
+- [ ] Admin server action to create a tenant-bound profile (service role) — deferred to Phase 7 (admin screens); seeded users cover Phase 3–6
+- [x] **Exit:** seeded user logs in; unauthorized → /login (307); inactive blocked; verified live
+
+> Root cause fixed during Phase 3: seeded `auth.users` had NULL token columns →
+> GoTrue "Database error querying schema" on every login. `seed.sql` now sets them to ''.
 
 ## Phase 4 — Item master data ⬜
 
@@ -162,6 +165,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-28 — Phase 3 closed; Supabase SSR clients, login/logout server actions, proxy route guard, profile gate, role-aware nav. Verified live: login 200, unauth→login 307, JWT custom claims present. Fixed NULL-token seed bug.
 - 2026-06-27 — Phase 2 closed; migrations pushed to live project (eu-west-1), seed loaded, 11/11 RLS/workflow policy tests pass via Docker-free `npm run db:test`. Manual step left: enable the Auth JWT hook in the dashboard.
 - 2026-06-27 — Phase 2 started; full DB-as-code written (schema/JWT hook/RLS/functions/seed/pgTAP). Awaiting a Supabase project to apply + test.
 - 2026-06-27 — Phase 1 closed; Next 16 + Tailwind v4 + shadcn scaffolded at repo root, RTL Arabic shell, route groups, build + runtime smoke green.

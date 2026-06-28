@@ -4,21 +4,28 @@
 -- Fixed UUIDs so policy tests can reference rows deterministically.
 
 -- ---- auth users (email/password) ----
--- helper: insert a confirmed email user + matching identity
+-- helper: insert a confirmed email user + matching identity.
+-- Token columns are set to '' (not left NULL): GoTrue scans them into Go strings and
+-- a NULL there makes every login fail with "Database error querying schema".
 insert into auth.users
   (instance_id, id, aud, role, email, encrypted_password,
    email_confirmed_at, created_at, updated_at,
-   raw_app_meta_data, raw_user_meta_data, is_sso_user)
+   raw_app_meta_data, raw_user_meta_data, is_sso_user,
+   confirmation_token, recovery_token, email_change, email_change_token_new,
+   email_change_token_current, phone_change, phone_change_token, reauthentication_token)
 values
   ('00000000-0000-0000-0000-000000000000','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
    'authenticated','authenticated','admin@baraa.test', crypt('password123', gen_salt('bf')),
-   now(), now(), now(), '{"provider":"email","providers":["email"]}','{}', false),
+   now(), now(), now(), '{"provider":"email","providers":["email"]}','{}', false,
+   '','','','','','','',''),
   ('00000000-0000-0000-0000-000000000000','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
    'authenticated','authenticated','pharmacist@baraa.test', crypt('password123', gen_salt('bf')),
-   now(), now(), now(), '{"provider":"email","providers":["email"]}','{}', false),
+   now(), now(), now(), '{"provider":"email","providers":["email"]}','{}', false,
+   '','','','','','','',''),
   ('00000000-0000-0000-0000-000000000000','cccccccc-cccc-cccc-cccc-cccccccccccc',
    'authenticated','authenticated','rep@baraa.test', crypt('password123', gen_salt('bf')),
-   now(), now(), now(), '{"provider":"email","providers":["email"]}','{}', false);
+   now(), now(), now(), '{"provider":"email","providers":["email"]}','{}', false,
+   '','','','','','','','');
 
 insert into auth.identities
   (provider_id, user_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
