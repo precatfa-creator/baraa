@@ -4,7 +4,7 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 
 **Legend:** ⬜ not started · 🟡 in progress · ✅ done · ⛔ blocked
 
-**Last updated:** 2026-06-28
+**Last updated:** 2026-06-29
 
 ## Status at a glance
 
@@ -15,13 +15,13 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 2 | Supabase database foundation | ✅ |
 | 3 | Auth & protected app | ✅ |
 | 4 | Item master data | ✅ |
-| 5 | Shortage workflow | ⬜ |
+| 5 | Shortage workflow | ✅ |
 | 6 | Dashboard & realtime | ⬜ |
 | 7 | Admin screens | ⬜ |
 | 8 | Testing, security, deployment | ⬜ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 4 complete — items list (paginated + search), admin create/edit dialogs, validation, duplicate-barcode handling, role gating (UI + RLS) all verified live. Next up: Phase 5 (shortage workflow — the core feature).
+**Now:** Phase 5 complete — full shortage lifecycle (create → in_purchase → fulfilled / cancelled) with item combobox, status tabs, transition buttons, history timeline, and Arabic toasts. Verified live end-to-end (8/8 workflow checks, 11/11 pgTAP). Next up: Phase 6 (dashboard & realtime).
 
 ## Decisions locked (read before coding)
 
@@ -108,15 +108,20 @@ deny — so Phase 3 login work depends on it.
 - [ ] Item search combobox for request forms — deferred to Phase 5 (its only consumer is the request form built there)
 - [x] **Exit:** verified live — list/search/pagination work; pharmacist write blocked by RLS (42501), not just hidden button; admin create/edit OK
 
-## Phase 5 — Shortage workflow ⬜
+## Phase 5 — Shortage workflow ✅
 
-- [ ] Active requests page with status tabs/filters
-- [ ] Create shortage dialog → server action → `create_shortage_request`
-- [ ] Request card/table components
-- [ ] Status transition buttons → `transition_shortage_status`
-- [ ] Status history on request detail
-- [ ] Friendly Arabic toasts / errors
-- [ ] **Exit:** pharmacist creates request; sales rep sees assigned; status changes; history records transitions
+- [x] Active requests page with status tabs/filters (`(dashboard)/requests`)
+- [x] Create shortage dialog → `create_shortage_request` (with item combobox, deferred from Phase 4)
+- [x] Request card components + detail page (`requests/[id]`)
+- [x] Status transition buttons → `transition_shortage_status` (role+status aware, `lib/workflow.ts`)
+- [x] Status history timeline on request detail
+- [x] Friendly Arabic toasts (sonner) / errors
+- [x] **Exit:** verified live — pharmacist creates → auto-assigned to rep → rep runs missing→in_purchase→fulfilled; history records the sequence; pharmacist blocked from rep-only transitions; compare-and-set rejects stale writes
+
+> Bug found & fixed in Phase 5: `transition_shortage_status` used SQLSTATE `40001`
+> for compare-and-set rejection, but PostgREST auto-retries the serialization-failure
+> class → the call hung. Changed to `55000` (object_not_in_prerequisite_state),
+> non-retryable. Migration, app mapping, and pgTAP assertion all updated.
 
 ## Phase 6 — Dashboard & realtime ⬜
 
@@ -165,6 +170,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — Phase 5 closed; full shortage workflow UI (status tabs, create dialog + item combobox, transition buttons, history timeline, sonner toasts) on the Phase 2 RPCs. Verified live 8/8 + pgTAP 11/11. Fixed 40001→55000 PostgREST auto-retry hang.
 - 2026-06-28 — Phase 4 closed; items master (list/search/pagination, admin create+edit dialogs, zod validation, dup-barcode 23505 handling). Verified live: RLS blocks pharmacist writes (42501), search filters, admin CRUD works. Combobox deferred to Phase 5. zod + shadcn dialog/input/label added.
 - 2026-06-28 — Phase 3 closed; Supabase SSR clients, login/logout server actions, proxy route guard, profile gate, role-aware nav. Verified live: login 200, unauth→login 307, JWT custom claims present. Fixed NULL-token seed bug.
 - 2026-06-27 — Phase 2 closed; migrations pushed to live project (eu-west-1), seed loaded, 11/11 RLS/workflow policy tests pass via Docker-free `npm run db:test`. Manual step left: enable the Auth JWT hook in the dashboard.

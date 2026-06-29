@@ -100,7 +100,7 @@ set local role authenticated;
 select set_config('request.jwt.claims', (select claims from jwt where label='repA'), true);
 select throws_ok(
   $$ select transition_shortage_status('a4444444-4444-4444-4444-444444444444','in_purchase','fulfilled') $$,
-  '40001', null, 'stale expected_status rejected (compare-and-set)');
+  '55000', null, 'stale expected_status rejected (compare-and-set)');
 
 -- assigned rep can legitimately start the purchase
 select lives_ok(

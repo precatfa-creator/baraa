@@ -124,10 +124,12 @@ begin
     raise exception 'request not found' using errcode = 'P0002';
   end if;
 
-  -- compare-and-set: the row must still be in the status the caller saw
+  -- compare-and-set: the row must still be in the status the caller saw.
+  -- 55000 (object_not_in_prerequisite_state), NOT 40001: PostgREST auto-retries
+  -- the serialization-failure class, but this rejection is permanent, not transient.
   if r.status <> p_expected_status then
     raise exception 'request is % not % (changed concurrently)', r.status, p_expected_status
-      using errcode = '40001';
+      using errcode = '55000';
   end if;
 
   -- legal edges in the workflow state machine
