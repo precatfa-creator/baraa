@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --test \"test/**/*.test.ts\"",
     "db:push": "supabase db push",
     "db:seed": "node scripts/run-sql.mjs supabase/seed.sql",
-    "db:test": "node scripts/run-sql.mjs scripts/pgtap-bootstrap.sql supabase/tests/rls_policies_test.sql"
+    "db:test": "node scripts/run-sql.mjs scripts/pgtap-bootstrap.sql supabase/tests/rls_policies_test.sql",
+    "test:workflow": "node scripts/test-workflow.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

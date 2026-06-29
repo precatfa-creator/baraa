@@ -18,10 +18,10 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 5 | Shortage workflow | ✅ |
 | 6 | Dashboard & realtime | ✅ |
 | 7 | Admin screens | ✅ |
-| 8 | Testing, security, deployment | ⬜ |
+| 8 | Testing, security, deployment | 🟡 |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 7 complete — admin screens (pharmacies CRUD, users + service-role create, rep↔pharmacy assignments), admin-gated in nav/page/RLS. Verified live incl. the deferred create-user flow. Next up: Phase 8 (testing, security, deployment).
+**Now:** Phase 8 in progress — tests (unit 5/5, workflow 8/8, pgTAP 11/11) and security pass done; **actual Vercel/Supabase deploy is the remaining step and needs your Vercel account** (see "Phase 8 handoff"). MVP is feature-complete.
 
 ## Decisions locked (read before coding)
 
@@ -142,16 +142,28 @@ deny — so Phase 3 login work depends on it.
 - [x] Admin create-user server action (service role) — deferred from Phase 3, now done (`actions/users.ts`, `lib/supabase/admin.ts`)
 - [x] **Exit:** verified live — admin reaches all 3 pages (200), pharmacist redirected (307) with no admin nav links; service-role create → new user logs in with correct JWT claims, RLS-scoped
 
-## Phase 8 — Testing, security, deployment ⬜
+## Phase 8 — Testing, security, deployment 🟡
 
-- [ ] Unit tests (validation, status mapping)
-- [ ] Integration tests (permissions, workflow functions)
-- [ ] Playwright smoke flows
-- [ ] Arabic RTL tested on mobile sizes (iOS Safari, Android Chrome)
-- [ ] No service role key in client; serverless uses transaction pooler — `docs/DEPLOYMENT.md`
-- [ ] Deploy to Vercel + Supabase staging
-- [ ] Production readiness checklist (`docs/DEPLOYMENT.md`)
-- [ ] **Exit:** staging works end-to-end; permission tests pass; mobile UX acceptable
+- [x] Unit tests (`test/workflow.test.ts`, node:test, 5/5 — transition rules + labels)
+- [x] Integration tests — `npm run test:workflow` (8/8, live, self-cleaning) + `npm run db:test` (pgTAP 11/11)
+- [x] No service role key in client — verified server-only import + not in `.next` bundle; serverless pooler noted in DEPLOYMENT.md
+- [ ] Playwright smoke flows — deferred (HTTP-level cookie smoke covers login→create→transition; full browser suite is post-MVP)
+- [ ] Arabic RTL on real mobile (iOS Safari, Android Chrome) — manual, needs your devices
+- [ ] Deploy to Vercel + Supabase — **needs your Vercel account** (handoff below)
+- [ ] Production readiness checklist (`docs/DEPLOYMENT.md`) — run during deploy
+- [ ] **Exit:** staging works end-to-end; mobile UX acceptable
+
+### Phase 8 handoff — deploy (needs your Vercel account)
+
+1. Push is already on GitHub (`precatfa-creator/baraa`). In Vercel: **New Project → import the repo** (framework auto-detects Next.js).
+2. Add env vars (Project Settings → Environment Variables) — values in `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public)
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-only — do NOT prefix NEXT_PUBLIC)
+3. In Supabase → Authentication → URL Configuration, add the Vercel domain to redirect/site URLs.
+4. Deploy. Then run the readiness checklist in `docs/DEPLOYMENT.md` against the live URL.
+5. ⚠️ Still pending: rotate the DB password + service-role key (both were shared in chat), update `.env.local` and Vercel.
+
+> Tag for first real production deploy: **v1.0.0** (this milestone is v0.9.0 — code-complete, tested, deploy-ready).
 
 ## Phase 9 — SaaS hardening (post-MVP) ⬜
 
@@ -171,6 +183,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — Phase 8 (partial); test suite formalized (unit 5/5 via node:test, workflow 8/8, pgTAP 11/11) + security pass (service key server-only, not in client bundle). Remaining: Vercel deploy + mobile manual (need user). MVP feature-complete.
 - 2026-06-29 — Phase 7 closed; admin screens (pharmacies/users/assignments) with service-role create-user (closes Phase 3 deferral). Admin-gated in nav + page redirect + RLS. Verified live: page gating + create-user→login→claims→RLS.
 - 2026-06-29 — Phase 6 closed; dashboard with status-count cards (head-only counts) linking to filtered request lists + active-requests list. Realtime deferred (dynamic page stays fresh). Verified live.
 - 2026-06-29 — Phase 5 closed; full shortage workflow UI (status tabs, create dialog + item combobox, transition buttons, history timeline, sonner toasts) on the Phase 2 RPCs. Verified live 8/8 + pgTAP 11/11. Fixed 40001→55000 PostgREST auto-retry hang.
