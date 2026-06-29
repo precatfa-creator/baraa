@@ -148,7 +148,7 @@ deny — so Phase 3 login work depends on it.
 - [x] Integration tests — `npm run test:workflow` (8/8, live, self-cleaning) + `npm run db:test` (pgTAP 11/11)
 - [x] No service role key in client — verified server-only import + not in `.next` bundle; serverless pooler noted in DEPLOYMENT.md
 - [ ] Playwright smoke flows — deferred (HTTP-level cookie smoke covers login→create→transition; full browser suite is post-MVP)
-- [ ] Arabic RTL on real mobile (iOS Safari, Android Chrome) — manual, needs your devices
+- [x] Mobile readiness — viewport meta + RTL confirmed; fixed tables overflowing (overflow-x-auto) and header crowding (flex-wrap + scrollable nav), redeployed. Real-device *visual* QA still ideal (HTTP/markup-level here).
 - [x] Deploy to Vercel — **LIVE**: https://baraa-red.vercel.app (env vars set for prod+preview; GitHub auto-deploy connected)
 - [ ] Production readiness checklist (`docs/DEPLOYMENT.md`) — partial: build/RLS/no-client-secret/pooler ✓; key rotation + real-device mobile pending
 - [x] **Exit:** production reachable; `/login` 200 RTL; unauth → /login 307 (proxy works in prod)
@@ -183,6 +183,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — Mobile pass on the live URL: verified viewport/RTL + all authenticated pages render on prod; fixed table overflow + header crowding, redeployed. Pending: rotate leaked keys, real-device visual QA.
 - 2026-06-29 — 🚀 v1.0.0 — MVP deployed to production at https://baraa-red.vercel.app (Vercel). Public URL works: login renders RTL, route protection active. Pending: rotate leaked keys, mobile device testing.
 - 2026-06-29 — Phase 8 (partial); test suite formalized (unit 5/5 via node:test, workflow 8/8, pgTAP 11/11) + security pass (service key server-only, not in client bundle). Remaining: Vercel deploy + mobile manual (need user). MVP feature-complete.
 - 2026-06-29 — Phase 7 closed; admin screens (pharmacies/users/assignments) with service-role create-user (closes Phase 3 deferral). Admin-gated in nav + page redirect + RLS. Verified live: page gating + create-user→login→claims→RLS.
