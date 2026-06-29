@@ -183,6 +183,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — Glassmorphism 2.0 UI: aurora backdrop + centralized `.glass-panel`/`.glass-bar` utilities on structural surfaces (dialogs, header, cards, tables, login). Styling only; deployed to prod.
 - 2026-06-29 — Mobile pass on the live URL: verified viewport/RTL + all authenticated pages render on prod; fixed table overflow + header crowding, redeployed. Pending: rotate leaked keys, real-device visual QA.
 - 2026-06-29 — 🚀 v1.0.0 — MVP deployed to production at https://baraa-red.vercel.app (Vercel). Public URL works: login renders RTL, route protection active. Pending: rotate leaked keys, mobile device testing.
 - 2026-06-29 — Phase 8 (partial); test suite formalized (unit 5/5 via node:test, workflow 8/8, pgTAP 11/11) + security pass (service key server-only, not in client bundle). Remaining: Vercel deploy + mobile manual (need user). MVP feature-complete.
