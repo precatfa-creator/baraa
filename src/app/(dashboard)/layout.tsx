@@ -39,11 +39,16 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-full flex-col">
       <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <span className="text-lg font-bold">براء</span>
-          <nav className="flex gap-4 text-sm text-muted-foreground">
+          {/* nav scrolls horizontally on narrow screens instead of crowding the row */}
+          <nav className="flex gap-4 overflow-x-auto text-sm text-muted-foreground">
             {nav.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:text-foreground">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="whitespace-nowrap hover:text-foreground"
+              >
                 {item.label}
               </Link>
             ))}
