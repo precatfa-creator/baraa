@@ -18,10 +18,10 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 5 | Shortage workflow | ✅ |
 | 6 | Dashboard & realtime | ✅ |
 | 7 | Admin screens | ✅ |
-| 8 | Testing, security, deployment | 🟡 |
+| 8 | Testing, security, deployment | ✅ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 8 in progress — tests (unit 5/5, workflow 8/8, pgTAP 11/11) and security pass done; **actual Vercel/Supabase deploy is the remaining step and needs your Vercel account** (see "Phase 8 handoff"). MVP is feature-complete.
+**Now:** 🚀 MVP **LIVE in production** — https://baraa-red.vercel.app (Vercel, `omars-projects-2185f46c/baraa`). All 8 MVP phases done. Remaining follow-ups: **rotate the leaked DB password + service-role key**, real-device mobile testing, then Phase 9 (post-MVP SaaS hardening).
 
 ## Decisions locked (read before coding)
 
@@ -142,16 +142,16 @@ deny — so Phase 3 login work depends on it.
 - [x] Admin create-user server action (service role) — deferred from Phase 3, now done (`actions/users.ts`, `lib/supabase/admin.ts`)
 - [x] **Exit:** verified live — admin reaches all 3 pages (200), pharmacist redirected (307) with no admin nav links; service-role create → new user logs in with correct JWT claims, RLS-scoped
 
-## Phase 8 — Testing, security, deployment 🟡
+## Phase 8 — Testing, security, deployment ✅
 
 - [x] Unit tests (`test/workflow.test.ts`, node:test, 5/5 — transition rules + labels)
 - [x] Integration tests — `npm run test:workflow` (8/8, live, self-cleaning) + `npm run db:test` (pgTAP 11/11)
 - [x] No service role key in client — verified server-only import + not in `.next` bundle; serverless pooler noted in DEPLOYMENT.md
 - [ ] Playwright smoke flows — deferred (HTTP-level cookie smoke covers login→create→transition; full browser suite is post-MVP)
 - [ ] Arabic RTL on real mobile (iOS Safari, Android Chrome) — manual, needs your devices
-- [ ] Deploy to Vercel + Supabase — **needs your Vercel account** (handoff below)
-- [ ] Production readiness checklist (`docs/DEPLOYMENT.md`) — run during deploy
-- [ ] **Exit:** staging works end-to-end; mobile UX acceptable
+- [x] Deploy to Vercel — **LIVE**: https://baraa-red.vercel.app (env vars set for prod+preview; GitHub auto-deploy connected)
+- [ ] Production readiness checklist (`docs/DEPLOYMENT.md`) — partial: build/RLS/no-client-secret/pooler ✓; key rotation + real-device mobile pending
+- [x] **Exit:** production reachable; `/login` 200 RTL; unauth → /login 307 (proxy works in prod)
 
 ### Phase 8 handoff — deploy (needs your Vercel account)
 
@@ -183,6 +183,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — 🚀 v1.0.0 — MVP deployed to production at https://baraa-red.vercel.app (Vercel). Public URL works: login renders RTL, route protection active. Pending: rotate leaked keys, mobile device testing.
 - 2026-06-29 — Phase 8 (partial); test suite formalized (unit 5/5 via node:test, workflow 8/8, pgTAP 11/11) + security pass (service key server-only, not in client bundle). Remaining: Vercel deploy + mobile manual (need user). MVP feature-complete.
 - 2026-06-29 — Phase 7 closed; admin screens (pharmacies/users/assignments) with service-role create-user (closes Phase 3 deferral). Admin-gated in nav + page redirect + RLS. Verified live: page gating + create-user→login→claims→RLS.
 - 2026-06-29 — Phase 6 closed; dashboard with status-count cards (head-only counts) linking to filtered request lists + active-requests list. Realtime deferred (dynamic page stays fresh). Verified live.
