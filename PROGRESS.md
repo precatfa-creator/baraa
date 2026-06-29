@@ -16,12 +16,12 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 3 | Auth & protected app | ✅ |
 | 4 | Item master data | ✅ |
 | 5 | Shortage workflow | ✅ |
-| 6 | Dashboard & realtime | ⬜ |
+| 6 | Dashboard & realtime | ✅ |
 | 7 | Admin screens | ⬜ |
 | 8 | Testing, security, deployment | ⬜ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 5 complete — full shortage lifecycle (create → in_purchase → fulfilled / cancelled) with item combobox, status tabs, transition buttons, history timeline, and Arabic toasts. Verified live end-to-end (8/8 workflow checks, 11/11 pgTAP). Next up: Phase 6 (dashboard & realtime).
+**Now:** Phase 6 complete — dashboard with status-count cards (linking to filtered lists) + active-requests list, RLS-scoped, verified live. Realtime deferred (dashboard is dynamic, fresh on every load). Next up: Phase 7 (admin screens — pharmacies, users, assignments).
 
 ## Decisions locked (read before coding)
 
@@ -123,14 +123,14 @@ deny — so Phase 3 login work depends on it.
 > class → the call hung. Changed to `55000` (object_not_in_prerequisite_state),
 > non-retryable. Migration, app mapping, and pgTAP assertion all updated.
 
-## Phase 6 — Dashboard & realtime ⬜
+## Phase 6 — Dashboard & realtime ✅
 
-- [ ] Dashboard summary cards (counts by status)
-- [ ] Active requests by status
-- [ ] Quick filters
-- [ ] Revalidation after actions
-- [ ] Narrowly-scoped realtime only where useful (no broad subscriptions)
-- [ ] **Exit:** clear operational view; no over-fetching of history
+- [x] Dashboard summary cards (head-counts by status, RLS-scoped, no rows pulled)
+- [x] Active requests list (missing + in_purchase, limit 8)
+- [x] Quick filters (cards link to `/requests?status=…`)
+- [x] Revalidation after actions (dashboard is dynamic → fresh counts every load)
+- [ ] Narrowly-scoped realtime — deferred: dashboard re-renders on every navigation, so counts are already current; revisit if live-without-navigation becomes a real need (avoid broad subscriptions per ARCHITECTURE §9)
+- [x] **Exit:** clear operational view; counts via head-only queries (no over-fetch); verified live (missing=1 reflected after a create)
 
 ## Phase 7 — Admin screens ⬜
 
@@ -170,6 +170,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — Phase 6 closed; dashboard with status-count cards (head-only counts) linking to filtered request lists + active-requests list. Realtime deferred (dynamic page stays fresh). Verified live.
 - 2026-06-29 — Phase 5 closed; full shortage workflow UI (status tabs, create dialog + item combobox, transition buttons, history timeline, sonner toasts) on the Phase 2 RPCs. Verified live 8/8 + pgTAP 11/11. Fixed 40001→55000 PostgREST auto-retry hang.
 - 2026-06-28 — Phase 4 closed; items master (list/search/pagination, admin create+edit dialogs, zod validation, dup-barcode 23505 handling). Verified live: RLS blocks pharmacist writes (42501), search filters, admin CRUD works. Combobox deferred to Phase 5. zod + shadcn dialog/input/label added.
 - 2026-06-28 — Phase 3 closed; Supabase SSR clients, login/logout server actions, proxy route guard, profile gate, role-aware nav. Verified live: login 200, unauth→login 307, JWT custom claims present. Fixed NULL-token seed bug.
