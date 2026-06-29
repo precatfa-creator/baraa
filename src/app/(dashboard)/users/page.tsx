@@ -40,7 +40,7 @@ export default async function UsersPage() {
         <UserDialog pharmacies={pharmacies ?? []} />
       </div>
 
-      <div className="overflow-x-auto rounded-md border">
+      <div className="glass-panel overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b text-muted-foreground">
             <tr>

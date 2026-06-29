@@ -42,7 +42,7 @@ export default async function DashboardPage() {
           <Link
             key={s}
             href={`/requests?status=${s}`}
-            className="rounded-md border p-4 transition-colors hover:bg-accent"
+            className="glass-panel glass-hover p-4"
           >
             <div className="text-2xl font-bold">{countByStatus[s]}</div>
             <div className="mt-1 text-sm text-muted-foreground">{statusLabel[s]}</div>
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
           <Link
             key={r.id}
             href={`/requests/${r.id}`}
-            className="flex items-center justify-between rounded-md border p-3 hover:bg-accent"
+            className="glass-panel glass-hover flex items-center justify-between p-3"
           >
             <span className="text-sm">
               {r.items?.name_ar ?? "—"}
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
           </Link>
         ))}
         {recent.length === 0 && (
-          <p className="rounded-md border p-6 text-center text-muted-foreground">
+          <p className="glass-panel p-6 text-center text-muted-foreground">
             لا توجد نواقص نشطة.
           </p>
         )}

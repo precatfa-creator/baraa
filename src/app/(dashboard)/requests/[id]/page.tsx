@@ -48,7 +48,7 @@ export default async function RequestDetailPage({
         ← الرجوع إلى النواقص
       </Link>
 
-      <div className="rounded-md border p-4">
+      <div className="glass-panel p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <h1 className="text-lg font-bold">{item?.name_ar ?? "—"}</h1>
@@ -73,7 +73,7 @@ export default async function RequestDetailPage({
         <h2 className="font-semibold">سجل الحالة</h2>
         <ol className="space-y-2">
           {events.map((e) => (
-            <li key={e.id} className="rounded-md border p-3 text-sm">
+            <li key={e.id} className="glass-panel p-3 text-sm">
               <div className="flex items-center justify-between">
                 <span>
                   {e.old_status ? `${statusLabel[e.old_status as Status]} ← ` : ""}

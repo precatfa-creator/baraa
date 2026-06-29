@@ -61,7 +61,7 @@ export default async function RequestsPage({
 
       <div className="space-y-3">
         {requests.map((r) => (
-          <div key={r.id} className="rounded-md border p-4">
+          <div key={r.id} className="glass-panel p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-1">
                 <Link href={`/requests/${r.id}`} className="font-medium hover:underline">
@@ -87,7 +87,7 @@ export default async function RequestsPage({
           </div>
         ))}
         {requests.length === 0 && (
-          <p className="rounded-md border p-6 text-center text-muted-foreground">
+          <p className="glass-panel p-6 text-center text-muted-foreground">
             لا توجد نواقص.
           </p>
         )}

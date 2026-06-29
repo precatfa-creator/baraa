@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-full flex-1 items-center justify-center px-4">
-      <form action={formAction} className="w-full max-w-sm space-y-4">
+      <form action={formAction} className="glass-panel w-full max-w-sm space-y-4 p-6">
         <h1 className="text-center text-2xl font-bold">براء</h1>
         <input
           name="email"

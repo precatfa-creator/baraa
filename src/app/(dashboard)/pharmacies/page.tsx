@@ -23,7 +23,7 @@ export default async function PharmaciesPage() {
         <PharmacyDialog triggerLabel="إضافة صيدلية" />
       </div>
 
-      <div className="overflow-x-auto rounded-md border">
+      <div className="glass-panel overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b text-muted-foreground">
             <tr>
