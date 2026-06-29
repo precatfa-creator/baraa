@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentProfile, type Role } from "@/lib/auth";
+import { getCurrentProfile, isAdmin, type Role } from "@/lib/auth";
 import { logout } from "../(auth)/actions";
 import { Button } from "@/components/ui/button";
 
@@ -11,11 +11,17 @@ const roleLabel: Record<Role, string> = {
   sales_rep: "مندوب مبيعات",
 };
 
-// Planned IA (design/sitemap.md). /items and /requests pages land in Phase 4/5.
-const nav = [
+const baseNav = [
   { href: "/dashboard", label: "لوحة التحكم" },
   { href: "/requests", label: "النواقص" },
   { href: "/items", label: "الأصناف" },
+];
+
+// Admin-only management screens (Phase 7).
+const adminNav = [
+  { href: "/pharmacies", label: "الصيدليات" },
+  { href: "/users", label: "المستخدمون" },
+  { href: "/assignments", label: "التعيينات" },
 ];
 
 export default async function DashboardLayout({
@@ -27,6 +33,8 @@ export default async function DashboardLayout({
   if (!profile || !profile.is_active) {
     redirect("/login");
   }
+
+  const nav = isAdmin(profile.role) ? [...baseNav, ...adminNav] : baseNav;
 
   return (
     <div className="flex min-h-full flex-col">

@@ -28,3 +28,14 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   return (data as Profile) ?? null;
 }
+
+export function isAdmin(role: Role | undefined): boolean {
+  return role === "company_admin" || role === "super_admin";
+}
+
+// Active admin profile, or null. Use to gate admin server actions and pages.
+export async function getAdminProfile(): Promise<Profile | null> {
+  const profile = await getCurrentProfile();
+  if (!profile || !profile.is_active || !isAdmin(profile.role)) return null;
+  return profile;
+}

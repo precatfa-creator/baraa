@@ -17,11 +17,11 @@ Living checklist for building the app. Update the status emoji and tick tasks as
 | 4 | Item master data | ✅ |
 | 5 | Shortage workflow | ✅ |
 | 6 | Dashboard & realtime | ✅ |
-| 7 | Admin screens | ⬜ |
+| 7 | Admin screens | ✅ |
 | 8 | Testing, security, deployment | ⬜ |
 | 9 | SaaS hardening (post-MVP) | ⬜ |
 
-**Now:** Phase 6 complete — dashboard with status-count cards (linking to filtered lists) + active-requests list, RLS-scoped, verified live. Realtime deferred (dashboard is dynamic, fresh on every load). Next up: Phase 7 (admin screens — pharmacies, users, assignments).
+**Now:** Phase 7 complete — admin screens (pharmacies CRUD, users + service-role create, rep↔pharmacy assignments), admin-gated in nav/page/RLS. Verified live incl. the deferred create-user flow. Next up: Phase 8 (testing, security, deployment).
 
 ## Decisions locked (read before coding)
 
@@ -132,14 +132,15 @@ deny — so Phase 3 login work depends on it.
 - [ ] Narrowly-scoped realtime — deferred: dashboard re-renders on every navigation, so counts are already current; revisit if live-without-navigation becomes a real need (avoid broad subscriptions per ARCHITECTURE §9)
 - [x] **Exit:** clear operational view; counts via head-only queries (no over-fetch); verified live (missing=1 reflected after a create)
 
-## Phase 7 — Admin screens ⬜
+## Phase 7 — Admin screens ✅
 
-- [ ] Pharmacies page
-- [ ] Users page
-- [ ] Sales-rep assignments page
-- [ ] Activate / deactivate user + pharmacy
-- [ ] Role restrictions + validation
-- [ ] **Exit:** admin manages users/pharmacies/assignments; sales-rep visibility follows assignments
+- [x] Pharmacies page (list + create/edit dialog)
+- [x] Users page (list + create via service role + role/pharmacy)
+- [x] Sales-rep assignments page (add + remove)
+- [x] Activate / deactivate user + pharmacy (no self-deactivate)
+- [x] Role restrictions (`getAdminProfile` gate in nav, page redirect, every action) + zod validation
+- [x] Admin create-user server action (service role) — deferred from Phase 3, now done (`actions/users.ts`, `lib/supabase/admin.ts`)
+- [x] **Exit:** verified live — admin reaches all 3 pages (200), pharmacist redirected (307) with no admin nav links; service-role create → new user logs in with correct JWT claims, RLS-scoped
 
 ## Phase 8 — Testing, security, deployment ⬜
 
@@ -170,6 +171,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-29 — Phase 7 closed; admin screens (pharmacies/users/assignments) with service-role create-user (closes Phase 3 deferral). Admin-gated in nav + page redirect + RLS. Verified live: page gating + create-user→login→claims→RLS.
 - 2026-06-29 — Phase 6 closed; dashboard with status-count cards (head-only counts) linking to filtered request lists + active-requests list. Realtime deferred (dynamic page stays fresh). Verified live.
 - 2026-06-29 — Phase 5 closed; full shortage workflow UI (status tabs, create dialog + item combobox, transition buttons, history timeline, sonner toasts) on the Phase 2 RPCs. Verified live 8/8 + pgTAP 11/11. Fixed 40001→55000 PostgREST auto-retry hang.
 - 2026-06-28 — Phase 4 closed; items master (list/search/pagination, admin create+edit dialogs, zod validation, dup-barcode 23505 handling). Verified live: RLS blocks pharmacist writes (42501), search filters, admin CRUD works. Combobox deferred to Phase 5. zod + shadcn dialog/input/label added.
