@@ -101,7 +101,7 @@ function Tab({ href, label, current }: { href: string; label: string; current: b
     <Link
       href={href}
       className={`rounded-md border px-3 py-1 ${
-        current ? "bg-foreground text-background" : "hover:bg-accent"
+        current ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent"
       }`}
     >
       {label}

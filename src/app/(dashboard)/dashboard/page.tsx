@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { AlertTriangle, ShoppingCart, CheckCircle2, XCircle, type LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { statusLabel, statusBadgeClass, type Status } from "@/lib/workflow";
 
 const STATUSES: Status[] = ["missing", "in_purchase", "fulfilled", "cancelled"];
+
+const statusIcon: Record<Status, LucideIcon> = {
+  missing: AlertTriangle,
+  in_purchase: ShoppingCart,
+  fulfilled: CheckCircle2,
+  cancelled: XCircle,
+};
 
 type ActiveRow = {
   id: string;
@@ -38,16 +46,22 @@ export default async function DashboardPage() {
       <h1 className="text-xl font-bold">لوحة التحكم</h1>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {STATUSES.map((s) => (
-          <Link
-            key={s}
-            href={`/requests?status=${s}`}
-            className="glass-panel glass-hover p-4"
-          >
-            <div className="text-2xl font-bold">{countByStatus[s]}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{statusLabel[s]}</div>
-          </Link>
-        ))}
+        {STATUSES.map((s) => {
+          const Icon = statusIcon[s];
+          return (
+            <Link
+              key={s}
+              href={`/requests?status=${s}`}
+              className="glass-panel glass-hover p-4"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold">{countByStatus[s]}</span>
+                <Icon className="size-5 text-primary" />
+              </div>
+              <div className="mt-1 text-sm text-muted-foreground">{statusLabel[s]}</div>
+            </Link>
+          );
+        })}
       </div>
 
       <div className="space-y-3">
