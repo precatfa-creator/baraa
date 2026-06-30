@@ -9,6 +9,7 @@ import { CloseBatchButton } from "../close-batch-button";
 
 type BatchHead = {
   id: string;
+  code: string;
   status: BatchStatus;
   created_at: string;
   pharmacies: { name: string } | null;
@@ -32,7 +33,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
   const supabase = await createClient();
   const { data: batch } = await supabase
     .from("batches")
-    .select("id, status, created_at, pharmacies(name)")
+    .select("id, code, status, created_at, pharmacies(name)")
     .eq("id", id)
     .maybeSingle();
   if (!batch) notFound();
@@ -66,7 +67,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
 
       <div className="glass-panel flex flex-wrap items-start justify-between gap-3 p-4">
         <div className="space-y-1">
-          <h1 className="text-lg font-bold">دفعة #{id.slice(0, 8)}</h1>
+          <h1 className="text-lg font-bold">دفعة {head.code}</h1>
           <div className="text-sm text-muted-foreground">
             {head.pharmacies?.name} ·{" "}
             {new Date(head.created_at).toLocaleString("ar-EG", {

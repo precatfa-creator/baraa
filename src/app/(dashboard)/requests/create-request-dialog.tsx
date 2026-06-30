@@ -44,10 +44,6 @@ export function CreateRequestDialog() {
             <ItemCombobox />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="quantity">الكمية</Label>
-            <Input id="quantity" name="quantity" type="number" min="1" step="1" defaultValue="1" />
-          </div>
-          <div className="space-y-1">
             <Label htmlFor="priority">الأولوية</Label>
             <select
               id="priority"

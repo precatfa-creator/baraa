@@ -116,7 +116,6 @@ export function BatchTable({
               {splitMode && <th className="p-3"></th>}
               <th className="p-3 text-start font-medium">الصنف</th>
               <th className="p-3 text-start font-medium">التصنيف</th>
-              <th className="p-3 text-start font-medium">الكمية</th>
               <th className="p-3 text-start font-medium">الصيدلي</th>
               <th className="p-3 text-start font-medium">
                 {canMark && !splitMode ? "تم الشراء" : "الحالة"}
@@ -145,10 +144,6 @@ export function BatchTable({
                   )}
                 </td>
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
-                <td className="p-3 text-muted-foreground">
-                  {r.quantity}
-                  {r.unit ? ` ${r.unit}` : ""}
-                </td>
                 <td className="p-3 text-muted-foreground">{r.requestedBy ?? "—"}</td>
                 <td className="p-3">
                   {canMark && !splitMode && (r.status === "in_purchase" || r.status === "fulfilled") ? (
@@ -172,7 +167,7 @@ export function BatchTable({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                <td colSpan={splitMode ? 5 : 4} className="p-6 text-center text-muted-foreground">
                   لا أصناف في هذه الدفعة.
                 </td>
               </tr>

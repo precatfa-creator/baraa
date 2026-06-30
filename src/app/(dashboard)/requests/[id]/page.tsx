@@ -53,8 +53,7 @@ export default async function RequestDetailPage({
           <div className="space-y-1">
             <h1 className="text-lg font-bold">{item?.name_ar ?? "—"}</h1>
             <div className="text-sm text-muted-foreground">
-              {pharmacy?.name} · الكمية: {request.quantity} · الأولوية:{" "}
-              {priorityLabel[request.priority] ?? request.priority}
+              {pharmacy?.name} · الأولوية: {priorityLabel[request.priority] ?? request.priority}
             </div>
             {request.notes && <div className="text-sm text-muted-foreground">{request.notes}</div>}
           </div>

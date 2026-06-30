@@ -6,6 +6,7 @@ const STATUSES: BatchStatus[] = ["open", "in_market", "closed"];
 
 type BatchRow = {
   id: string;
+  code: string;
   status: BatchStatus;
   created_at: string;
   pharmacy_id: string;
@@ -29,7 +30,7 @@ export default async function BatchesPage({
   const supabase = await createClient();
   let query = supabase
     .from("batches")
-    .select("id, status, created_at, pharmacy_id, pharmacies(name)")
+    .select("id, code, status, created_at, pharmacy_id, pharmacies(name)")
     .order("created_at", { ascending: false })
     .limit(50);
   if (active) query = query.eq("status", active);
@@ -71,7 +72,7 @@ export default async function BatchesPage({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="font-medium">
-                    دفعة #{b.id.slice(0, 8)}
+                    دفعة {b.code}
                     <span className="text-muted-foreground"> · {b.pharmacies?.name}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">

@@ -74,7 +74,6 @@ export function RequeueControls({ rows, canHandle }: { rows: UnavailableRow[]; c
               {canHandle && <th className="p-3"></th>}
               <th className="p-3 text-start font-medium">الصنف</th>
               <th className="p-3 text-start font-medium">التصنيف</th>
-              <th className="p-3 text-start font-medium">الكمية</th>
               <th className="p-3 text-start font-medium">الصيدلية</th>
             </tr>
           </thead>
@@ -100,16 +99,12 @@ export function RequeueControls({ rows, canHandle }: { rows: UnavailableRow[]; c
                   )}
                 </td>
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
-                <td className="p-3 text-muted-foreground">
-                  {r.quantity}
-                  {r.unit ? ` ${r.unit}` : ""}
-                </td>
                 <td className="p-3 text-muted-foreground">{r.pharmacy ?? "—"}</td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={canHandle ? 5 : 4} className="p-6 text-center text-muted-foreground">
+                <td colSpan={canHandle ? 4 : 3} className="p-6 text-center text-muted-foreground">
                   لا توجد أصناف غير متوفرة.
                 </td>
               </tr>

@@ -78,8 +78,7 @@ export default async function RequestsPage({
                   )}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {r.pharmacies?.name} · الكمية: {r.quantity} · الأولوية:{" "}
-                  {priorityLabel[r.priority] ?? r.priority}
+                  {r.pharmacies?.name} · الأولوية: {priorityLabel[r.priority] ?? r.priority}
                 </div>
                 {r.notes && <div className="text-sm text-muted-foreground">{r.notes}</div>}
               </div>
