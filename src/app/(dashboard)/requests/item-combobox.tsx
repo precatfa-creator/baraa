@@ -35,9 +35,20 @@ export function ItemCombobox() {
     return () => clearTimeout(handle);
   }, [query, selected]);
 
+  // Submit the explicit pick, or fall back to an exact name match in the loaded
+  // list — so a valid typed/selected name always carries its id (and a stale
+  // "choose an item" error clears once the text resolves).
+  const itemId = selected?.id ?? results.find((r) => r.name_ar === query)?.id ?? "";
+
+  const choose = (item: Item) => {
+    setSelected(item);
+    setQuery(item.name_ar);
+    setOpen(false);
+  };
+
   return (
     <div className="relative space-y-1">
-      <input type="hidden" name="item_id" value={selected?.id ?? ""} />
+      <input type="hidden" name="item_id" value={itemId} />
       <Input
         placeholder="اختر الصنف أو اكتب للبحث"
         value={query}
@@ -52,17 +63,22 @@ export function ItemCombobox() {
         autoComplete="off"
       />
       {open && results.length > 0 && (
-        <ul className="glass-panel absolute z-10 mt-1 max-h-48 w-full overflow-auto p-1">
+        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg">
           {results.map((item) => (
             <li key={item.id}>
               <button
                 type="button"
                 className="w-full rounded-md px-3 py-2 text-start text-sm hover:bg-accent"
-                onClick={() => {
-                  setSelected(item);
-                  setQuery(item.name_ar);
-                  setOpen(false);
+                // Commit on pointer-down (covers mouse + touch) and preventDefault so
+                // the input never blurs: on touch the blur dismisses the keyboard and
+                // reflows the layout, moving this option out from under the tap before
+                // the click lands, which dropped the selection. onClick stays for
+                // keyboard/programmatic activation.
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  choose(item);
                 }}
+                onClick={() => choose(item)}
               >
                 {item.name_ar}
               </button>

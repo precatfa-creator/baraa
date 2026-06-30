@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Plus } from "lucide-react";
 import { createShortageRequest, type ActionResult } from "@/actions/requests";
 import { ItemCombobox } from "./item-combobox";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,10 @@ export function CreateRequestDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>إضافة نقص</DialogTrigger>
+      <DialogTrigger render={<Button />}>
+        <Plus className="size-4" />
+        إضافة نقص
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>تسجيل نقص</DialogTitle>
