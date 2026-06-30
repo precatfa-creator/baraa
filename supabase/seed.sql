@@ -74,3 +74,16 @@ insert into public.sales_rep_assignments (company_id, sales_rep_id, pharmacy_id)
 values ('11111111-1111-1111-1111-111111111111',
         'cccccccc-cccc-cccc-cccc-cccccccccccc',
         '22222222-2222-2222-2222-222222222222');
+
+-- item form pick-lists (category + unit)
+insert into public.item_categories (company_id, name) values
+  ('11111111-1111-1111-1111-111111111111', 'مسكنات'),
+  ('11111111-1111-1111-1111-111111111111', 'مضادات حيوية'),
+  ('11111111-1111-1111-1111-111111111111', 'فيتامينات')
+on conflict (company_id, name) do nothing;
+
+insert into public.item_units (company_id, name) values
+  ('11111111-1111-1111-1111-111111111111', 'علبة'),
+  ('11111111-1111-1111-1111-111111111111', 'شريط'),
+  ('11111111-1111-1111-1111-111111111111', 'زجاجة')
+on conflict (company_id, name) do nothing;

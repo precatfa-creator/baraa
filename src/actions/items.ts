@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import * as XLSX from "xlsx";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
@@ -21,6 +22,28 @@ const itemSchema = z.object({
 });
 
 export type ItemFormState = { error: string } | null;
+
+// Register the chosen category/unit in the per-tenant pick-lists so they appear
+// in the dropdown next time. Best-effort: the item is already saved, and a failed
+// lookup write (or a typo creating a junk entry) must not fail the item mutation.
+// ponytail: typos accumulate as list entries; add a lookups management screen if that bites.
+async function registerLookups(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string,
+  category: string | null,
+  unit: string | null,
+) {
+  if (category) {
+    await supabase
+      .from("item_categories")
+      .upsert({ company_id: companyId, name: category }, { onConflict: "company_id,name", ignoreDuplicates: true });
+  }
+  if (unit) {
+    await supabase
+      .from("item_units")
+      .upsert({ company_id: companyId, name: unit }, { onConflict: "company_id,name", ignoreDuplicates: true });
+  }
+}
 
 function parse(formData: FormData) {
   return itemSchema.safeParse({
@@ -61,6 +84,7 @@ export async function createItem(_prev: ItemFormState, formData: FormData): Prom
     return { error: toArabicError(error) };
   }
 
+  await registerLookups(supabase, profile.company_id, parsed.data.category, parsed.data.unit);
   revalidatePath("/items");
   return null;
 }
@@ -81,6 +105,117 @@ export async function updateItem(_prev: ItemFormState, formData: FormData): Prom
     return { error: toArabicError(error) };
   }
 
+  const profile = await getCurrentProfile();
+  if (profile?.company_id) {
+    await registerLookups(supabase, profile.company_id, parsed.data.category, parsed.data.unit);
+  }
   revalidatePath("/items");
   return null;
+}
+
+// --- Bulk import from Excel/CSV -------------------------------------------------
+
+// Map a sheet row (keyed by header text) to our fields, accepting Arabic or English
+// headers in any order/case.
+const HEADER_ALIASES = {
+  name_ar: ["name_ar", "الاسم بالعربية", "الاسم العربي", "الاسم", "اسم الصنف", "name"],
+  name_en: ["name_en", "الاسم بالإنجليزية", "english name", "english"],
+  barcode: ["barcode", "الباركود", "باركود"],
+  category: ["category", "التصنيف", "تصنيف"],
+  unit: ["unit", "الوحدة", "وحدة"],
+} as const;
+
+const norm = (s: unknown) => String(s).trim().toLowerCase();
+
+function pick(row: Record<string, unknown>, aliases: readonly string[]): string {
+  for (const key of Object.keys(row)) {
+    if (aliases.some((a) => norm(a) === norm(key))) {
+      const v = row[key];
+      return v == null ? "" : String(v).trim();
+    }
+  }
+  return "";
+}
+
+export type ImportResult = { added: number; skipped: number; errors: string[] };
+
+export async function importItems(formData: FormData): Promise<ImportResult | { error: string }> {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "اختر ملفًا." };
+
+  const profile = await getCurrentProfile();
+  if (!profile?.company_id) return { error: "لا يمكن تحديد الشركة." };
+  if (profile.role !== "company_admin" && profile.role !== "super_admin") {
+    return { error: "ليس لديك صلاحية لاستيراد الأصناف." };
+  }
+  const companyId = profile.company_id;
+  const userId = profile.id;
+
+  let rows: Record<string, unknown>[];
+  try {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const wb = XLSX.read(buf, { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+  } catch {
+    return { error: "تعذّر قراءة الملف. تأكد أنه Excel أو CSV صالح." };
+  }
+  if (rows.length === 0) return { error: "الملف فارغ." };
+
+  const supabase = await createClient();
+  // existing barcodes in this company (RLS-scoped) → skip dups, also dedupe within the file
+  const { data: existing } = await supabase.from("items").select("barcode").not("barcode", "is", null);
+  const seen = new Set<string>((existing ?? []).map((r) => r.barcode as string));
+
+  const toInsert: Array<z.infer<typeof itemSchema> & { company_id: string; created_by: string }> = [];
+  const errors: string[] = [];
+  let skipped = 0;
+
+  rows.forEach((row, i) => {
+    const parsed = itemSchema.safeParse({
+      name_ar: pick(row, HEADER_ALIASES.name_ar),
+      name_en: pick(row, HEADER_ALIASES.name_en),
+      barcode: pick(row, HEADER_ALIASES.barcode),
+      category: pick(row, HEADER_ALIASES.category),
+      unit: pick(row, HEADER_ALIASES.unit),
+    });
+    if (!parsed.success) {
+      errors.push(`سطر ${i + 2}: ${parsed.error.issues[0].message}`); // +2: header row + 1-based
+      return;
+    }
+    const barcode = parsed.data.barcode;
+    if (barcode && seen.has(barcode)) {
+      skipped++;
+      return;
+    }
+    if (barcode) seen.add(barcode);
+    toInsert.push({ ...parsed.data, company_id: companyId, created_by: userId });
+  });
+
+  let added = 0;
+  if (toInsert.length > 0) {
+    const { error, count } = await supabase.from("items").insert(toInsert, { count: "exact" });
+    if (error) {
+      console.error("import insert failed:", error.code, error.message);
+      return { error: "تعذّر حفظ الأصناف. تأكد من الصلاحيات والبيانات." };
+    }
+    added = count ?? toInsert.length;
+
+    // register imported categories/units in the pick-lists
+    const cats = [...new Set(toInsert.map((r) => r.category).filter((v): v is string => !!v))];
+    const units = [...new Set(toInsert.map((r) => r.unit).filter((v): v is string => !!v))];
+    if (cats.length) {
+      await supabase
+        .from("item_categories")
+        .upsert(cats.map((name) => ({ company_id: companyId, name })), { onConflict: "company_id,name", ignoreDuplicates: true });
+    }
+    if (units.length) {
+      await supabase
+        .from("item_units")
+        .upsert(units.map((name) => ({ company_id: companyId, name })), { onConflict: "company_id,name", ignoreDuplicates: true });
+    }
+  }
+
+  revalidatePath("/items");
+  return { added, skipped, errors };
 }

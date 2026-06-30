@@ -29,11 +29,15 @@ export function ItemDialog({
   triggerLabel,
   triggerVariant = "default",
   triggerSize = "default",
+  categories = [],
+  units = [],
 }: {
   item?: ItemFields;
   triggerLabel: string;
   triggerVariant?: "default" | "ghost" | "secondary" | "outline";
   triggerSize?: "default" | "sm";
+  categories?: string[];
+  units?: string[];
 }) {
   const action = item ? updateItem : createItem;
   const [open, setOpen] = useState(false);
@@ -61,8 +65,8 @@ export function ItemDialog({
           <Field name="name_ar" label="الاسم بالعربية" defaultValue={item?.name_ar} required />
           <Field name="name_en" label="الاسم بالإنجليزية" defaultValue={item?.name_en} />
           <Field name="barcode" label="الباركود" defaultValue={item?.barcode} />
-          <Field name="category" label="التصنيف" defaultValue={item?.category} />
-          <Field name="unit" label="الوحدة" defaultValue={item?.unit} />
+          <DatalistField name="category" label="التصنيف" defaultValue={item?.category} options={categories} />
+          <DatalistField name="unit" label="الوحدة" defaultValue={item?.unit} options={units} />
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
@@ -90,6 +94,40 @@ function Field({
     <div className="space-y-1">
       <Label htmlFor={name}>{label}</Label>
       <Input id={name} name={name} defaultValue={defaultValue ?? ""} required={required} />
+    </div>
+  );
+}
+
+// Pick from the per-tenant list (native datalist) or type a new value — the new
+// one is auto-registered on save by the server action.
+function DatalistField({
+  name,
+  label,
+  defaultValue,
+  options,
+}: {
+  name: string;
+  label: string;
+  defaultValue?: string | null;
+  options: string[];
+}) {
+  const listId = `${name}-list`;
+  return (
+    <div className="space-y-1">
+      <Label htmlFor={name}>{label}</Label>
+      <Input
+        id={name}
+        name={name}
+        list={listId}
+        defaultValue={defaultValue ?? ""}
+        autoComplete="off"
+        placeholder="اختر من القائمة أو اكتب قيمة جديدة"
+      />
+      <datalist id={listId}>
+        {options.map((o) => (
+          <option key={o} value={o} />
+        ))}
+      </datalist>
     </div>
   );
 }

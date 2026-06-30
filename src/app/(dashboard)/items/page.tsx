@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { ItemDialog, type ItemFields } from "./item-dialog";
+import { ImportItemsDialog } from "./import-items-dialog";
 
 const PAGE_SIZE = 20;
 
@@ -30,7 +31,13 @@ export default async function ItemsPage({
     query = query.or(`name_ar.ilike.%${term}%,barcode.ilike.%${term}%`);
   }
 
-  const { data: items, count } = await query;
+  const [{ data: items, count }, { data: categoryRows }, { data: unitRows }] = await Promise.all([
+    query,
+    supabase.from("item_categories").select("name").order("name"),
+    supabase.from("item_units").select("name").order("name"),
+  ]);
+  const categories = (categoryRows ?? []).map((r) => r.name);
+  const units = (unitRows ?? []).map((r) => r.name);
   const total = count ?? 0;
   const hasPrev = pageNum > 1;
   const hasNext = from + PAGE_SIZE < total;
@@ -39,7 +46,12 @@ export default async function ItemsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-bold">الأصناف</h1>
-        {canManage && <ItemDialog triggerLabel="إضافة صنف" />}
+        {canManage && (
+          <div className="flex flex-wrap gap-2">
+            <ImportItemsDialog />
+            <ItemDialog triggerLabel="إضافة صنف" categories={categories} units={units} />
+          </div>
+        )}
       </div>
 
       <form className="flex gap-2">
@@ -79,6 +91,8 @@ export default async function ItemsPage({
                       triggerLabel="تعديل"
                       triggerVariant="ghost"
                       triggerSize="sm"
+                      categories={categories}
+                      units={units}
                     />
                   </td>
                 )}
