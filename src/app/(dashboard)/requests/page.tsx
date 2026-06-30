@@ -16,6 +16,7 @@ type RequestRow = {
   created_at: string;
   items: { name_ar: string } | null;
   pharmacies: { name: string } | null;
+  shortage_request_requesters: { count: number }[];
 };
 
 export default async function RequestsPage({
@@ -33,7 +34,9 @@ export default async function RequestsPage({
   const supabase = await createClient();
   let query = supabase
     .from("shortage_requests")
-    .select("id, status, quantity, priority, notes, created_at, items(name_ar), pharmacies(name)")
+    .select(
+      "id, status, quantity, priority, notes, created_at, items(name_ar), pharmacies(name), shortage_request_requesters(count)",
+    )
     .order("created_at", { ascending: false })
     .limit(50);
   if (active) query = query.eq("status", active);
@@ -64,9 +67,16 @@ export default async function RequestsPage({
           <div key={r.id} className="glass-panel p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-1">
-                <Link href={`/requests/${r.id}`} className="font-medium hover:underline">
-                  {r.items?.name_ar ?? "—"}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href={`/requests/${r.id}`} className="font-medium hover:underline">
+                    {r.items?.name_ar ?? "—"}
+                  </Link>
+                  {(r.shortage_request_requesters?.[0]?.count ?? 1) > 1 && (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                      طلبه {r.shortage_request_requesters[0].count}
+                    </span>
+                  )}
+                </div>
                 <div className="text-sm text-muted-foreground">
                   {r.pharmacies?.name} · الكمية: {r.quantity} · الأولوية:{" "}
                   {priorityLabel[r.priority] ?? r.priority}

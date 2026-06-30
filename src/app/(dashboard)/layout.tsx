@@ -16,6 +16,7 @@ const baseNav = [
   { href: "/dashboard", label: "لوحة التحكم" },
   { href: "/requests", label: "النواقص" },
   { href: "/batches", label: "الدُفعات" },
+  { href: "/unavailable", label: "غير المتوفرة" },
   { href: "/items", label: "الأصناف" },
 ];
 

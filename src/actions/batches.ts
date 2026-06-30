@@ -35,6 +35,28 @@ export async function takeBatch(batchId: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+export async function closeBatch(batchId: string): Promise<ActionResult> {
+  if (!uuid.safeParse(batchId).success) return { ok: false, error: "دفعة غير صالحة." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("close_batch", { p_batch_id: batchId });
+  if (error) return { ok: false, error: rpcError(error) };
+  revalidatePath("/batches", "layout");
+  revalidatePath("/unavailable");
+  return { ok: true };
+}
+
+export async function requeueNotFound(requestIds: string[]): Promise<ActionResult> {
+  if (!z.array(uuid).min(1).safeParse(requestIds).success) {
+    return { ok: false, error: "اختر صنفًا واحدًا على الأقل." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("requeue_not_found", { p_request_ids: requestIds });
+  if (error) return { ok: false, error: rpcError(error) };
+  revalidatePath("/unavailable");
+  revalidatePath("/batches", "layout");
+  return { ok: true };
+}
+
 export async function setItemPurchased(
   requestId: string,
   purchased: boolean,

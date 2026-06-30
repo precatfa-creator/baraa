@@ -5,6 +5,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { batchStatusLabel, batchStatusBadgeClass, type BatchStatus, type Status } from "@/lib/workflow";
 import { BatchTable, type BatchRow } from "../batch-table";
 import { TakeBatchButton } from "../take-batch-button";
+import { CloseBatchButton } from "../close-batch-button";
 
 type BatchHead = {
   id: string;
@@ -19,6 +20,7 @@ type ItemRow = {
   quantity: number;
   items: { name_ar: string; category: string | null; unit: string | null } | null;
   profiles: { full_name: string } | null;
+  shortage_request_requesters: { count: number }[];
 };
 
 export default async function BatchDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -39,7 +41,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
   const { data: itemsData } = await supabase
     .from("shortage_requests")
     .select(
-      "id, status, quantity, items(name_ar, category, unit), profiles!shortage_requests_requested_by_fkey(full_name)",
+      "id, status, quantity, items(name_ar, category, unit), profiles!shortage_requests_requested_by_fkey(full_name), shortage_request_requesters(count)",
     )
     .eq("batch_id", id)
     .order("created_at", { ascending: true });
@@ -52,6 +54,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
     quantity: r.quantity,
     status: r.status,
     requestedBy: r.profiles?.full_name ?? null,
+    requesters: r.shortage_request_requesters?.[0]?.count ?? 1,
   }));
   const contributors = [...new Set(rows.map((r) => r.requestedBy).filter((n): n is string => !!n))];
 
@@ -80,6 +83,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
             {batchStatusLabel[head.status]}
           </span>
           {canHandle && head.status === "open" && <TakeBatchButton batchId={id} />}
+          {canHandle && head.status === "in_market" && <CloseBatchButton batchId={id} />}
         </div>
       </div>
 

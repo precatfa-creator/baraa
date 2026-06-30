@@ -16,6 +16,7 @@ export type BatchRow = {
   quantity: number;
   status: Status;
   requestedBy: string | null;
+  requesters: number;
 };
 
 export function BatchTable({
@@ -135,7 +136,14 @@ export function BatchTable({
                     />
                   </td>
                 )}
-                <td className="p-3">{r.name}</td>
+                <td className="p-3">
+                  {r.name}
+                  {r.requesters > 1 && (
+                    <span className="ms-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                      طلبه {r.requesters}
+                    </span>
+                  )}
+                </td>
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">
                   {r.quantity}

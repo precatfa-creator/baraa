@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ShoppingCart, CheckCircle2, XCircle, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ShoppingCart, CheckCircle2, XCircle, PackageX, type LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { statusLabel, statusBadgeClass, type Status } from "@/lib/workflow";
 
@@ -10,6 +10,7 @@ const statusIcon: Record<Status, LucideIcon> = {
   in_purchase: ShoppingCart,
   fulfilled: CheckCircle2,
   cancelled: XCircle,
+  not_found: PackageX,
 };
 
 type ActiveRow = {

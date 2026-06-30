@@ -1,6 +1,6 @@
 import type { Role } from "@/lib/auth";
 
-export type Status = "missing" | "in_purchase" | "fulfilled" | "cancelled";
+export type Status = "missing" | "in_purchase" | "fulfilled" | "cancelled" | "not_found";
 
 // Arabic UI labels for the English DB statuses (PRD §5).
 export const statusLabel: Record<Status, string> = {
@@ -8,6 +8,7 @@ export const statusLabel: Record<Status, string> = {
   in_purchase: "قيد الشراء",
   fulfilled: "تم توفيره",
   cancelled: "ملغي",
+  not_found: "غير متوفر",
 };
 
 export const statusBadgeClass: Record<Status, string> = {
@@ -15,6 +16,7 @@ export const statusBadgeClass: Record<Status, string> = {
   in_purchase: "bg-blue-100 text-blue-800",
   fulfilled: "bg-green-100 text-green-800",
   cancelled: "bg-zinc-100 text-zinc-600",
+  not_found: "bg-rose-100 text-rose-800",
 };
 
 export type BatchStatus = "open" | "in_market" | "closed";
