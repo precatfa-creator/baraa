@@ -17,6 +17,7 @@ const baseNav = [
   { href: "/requests", label: "النواقص" },
   { href: "/batches", label: "الدُفعات" },
   { href: "/unavailable", label: "غير المتوفرة" },
+  { href: "/trends", label: "الأكثر طلبًا" },
   { href: "/items", label: "الأصناف" },
 ];
 
