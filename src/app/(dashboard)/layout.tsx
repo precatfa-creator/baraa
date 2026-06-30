@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile, isAdmin, type Role } from "@/lib/auth";
+import { LogOut } from "lucide-react";
 import { logout } from "../(auth)/actions";
 import { Button } from "@/components/ui/button";
+import { NavLinks } from "./nav-links";
 
 const roleLabel: Record<Role, string> = {
   super_admin: "مدير المنصة",
@@ -14,6 +15,7 @@ const roleLabel: Record<Role, string> = {
 const baseNav = [
   { href: "/dashboard", label: "لوحة التحكم" },
   { href: "/requests", label: "النواقص" },
+  { href: "/batches", label: "الدُفعات" },
   { href: "/items", label: "الأصناف" },
 ];
 
@@ -40,25 +42,16 @@ export default async function DashboardLayout({
     <div className="flex min-h-full flex-col">
       <header className="glass-bar sticky top-0 z-20">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <span className="text-lg font-bold">براء</span>
+          <span className="text-lg font-bold text-primary">براء</span>
           {/* nav scrolls horizontally on narrow screens instead of crowding the row */}
-          <nav className="flex gap-4 overflow-x-auto text-sm text-muted-foreground">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="whitespace-nowrap hover:text-foreground"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <NavLinks items={nav} />
           <div className="ms-auto flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">
               {profile.full_name} · {roleLabel[profile.role]}
             </span>
             <form action={logout}>
               <Button type="submit" variant="ghost" size="sm">
+                <LogOut className="size-4" />
                 خروج
               </Button>
             </form>

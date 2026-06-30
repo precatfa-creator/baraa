@@ -183,6 +183,7 @@ deny — so Phase 3 login work depends on it.
 
 ## Changelog
 
+- 2026-06-30 — **Batches (paper workflow) + Excel bulk import.** New `batches` table groups a pharmacy's missings into one auto-opened batch (`shortage_requests.batch_id`); `create_shortage_request` now files into the open batch (advisory-locked find-or-create). New SECURITY DEFINER RPCs: `take_batch` (open→in_market, items→in_purchase), `set_batch_item_purchased` (tick bought→fulfilled / untick, auto-close batch), `split_batch` (rep/admin move items to a new in_market batch). RLS select mirrors shortage_requests. UI: `/batches` list + `/batches/[id]` table (take-to-market, tick bought, split by category). Items: Excel/CSV import via SheetJS (`importItems`, header-alias mapping, skip duplicate barcodes, registers categories/units). Migration `20260630130000_batches.sql`. **Pending: `npm run db:push` to apply (needs DB password); then live e2e.**
 - 2026-06-29 — Glassmorphism 2.0 UI: aurora backdrop + centralized `.glass-panel`/`.glass-bar` utilities on structural surfaces (dialogs, header, cards, tables, login). Styling only; deployed to prod.
 - 2026-06-29 — Mobile pass on the live URL: verified viewport/RTL + all authenticated pages render on prod; fixed table overflow + header crowding, redeployed. Pending: rotate leaked keys, real-device visual QA.
 - 2026-06-29 — 🚀 v1.0.0 — MVP deployed to production at https://baraa-red.vercel.app (Vercel). Public URL works: login renders RTL, route protection active. Pending: rotate leaked keys, mobile device testing.

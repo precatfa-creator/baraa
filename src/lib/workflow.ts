@@ -17,6 +17,20 @@ export const statusBadgeClass: Record<Status, string> = {
   cancelled: "bg-zinc-100 text-zinc-600",
 };
 
+export type BatchStatus = "open" | "in_market" | "closed";
+
+export const batchStatusLabel: Record<BatchStatus, string> = {
+  open: "قيد التجميع",
+  in_market: "في السوق",
+  closed: "مكتملة",
+};
+
+export const batchStatusBadgeClass: Record<BatchStatus, string> = {
+  open: "bg-amber-100 text-amber-800",
+  in_market: "bg-blue-100 text-blue-800",
+  closed: "bg-green-100 text-green-800",
+};
+
 export const priorityLabel: Record<string, string> = {
   low: "منخفضة",
   normal: "عادية",
