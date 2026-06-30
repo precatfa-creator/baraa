@@ -19,6 +19,7 @@ type ItemRow = {
   id: string;
   status: Status;
   quantity: number;
+  created_at: string;
   items: { name_ar: string; category: string | null; unit: string | null } | null;
   profiles: { full_name: string } | null;
   shortage_request_requesters: { count: number }[];
@@ -42,7 +43,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
   const { data: itemsData } = await supabase
     .from("shortage_requests")
     .select(
-      "id, status, quantity, items(name_ar, category, unit), profiles!shortage_requests_requested_by_fkey(full_name), shortage_request_requesters(count)",
+      "id, status, quantity, created_at, items(name_ar, category, unit), profiles!shortage_requests_requested_by_fkey(full_name), shortage_request_requesters(count)",
     )
     .eq("batch_id", id)
     .order("created_at", { ascending: true });
@@ -54,6 +55,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
     unit: r.items?.unit ?? null,
     quantity: r.quantity,
     status: r.status,
+    createdAt: r.created_at,
     requestedBy: r.profiles?.full_name ?? null,
     requesters: r.shortage_request_requesters?.[0]?.count ?? 1,
   }));

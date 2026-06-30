@@ -15,6 +15,7 @@ export type BatchRow = {
   unit: string | null;
   quantity: number;
   status: Status;
+  createdAt: string;
   requestedBy: string | null;
   requesters: number;
 };
@@ -117,6 +118,7 @@ export function BatchTable({
               <th className="p-3 text-start font-medium">الصنف</th>
               <th className="p-3 text-start font-medium">التصنيف</th>
               <th className="p-3 text-start font-medium">الصيدلي</th>
+              <th className="p-3 text-start font-medium">التاريخ</th>
               <th className="p-3 text-start font-medium">
                 {canMark && !splitMode ? "تم الشراء" : "الحالة"}
               </th>
@@ -145,6 +147,12 @@ export function BatchTable({
                 </td>
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{r.requestedBy ?? "—"}</td>
+                <td className="whitespace-nowrap p-3 text-xs text-muted-foreground">
+                  {new Date(r.createdAt).toLocaleString("ar-EG", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
+                </td>
                 <td className="p-3">
                   {canMark && !splitMode && (r.status === "in_purchase" || r.status === "fulfilled") ? (
                     <label className="inline-flex items-center gap-2">
@@ -167,7 +175,7 @@ export function BatchTable({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={splitMode ? 5 : 4} className="p-6 text-center text-muted-foreground">
+                <td colSpan={splitMode ? 6 : 5} className="p-6 text-center text-muted-foreground">
                   لا أصناف في هذه الدفعة.
                 </td>
               </tr>

@@ -80,6 +80,12 @@ export default async function RequestsPage({
                 <div className="text-sm text-muted-foreground">
                   {r.pharmacies?.name} · الأولوية: {priorityLabel[r.priority] ?? r.priority}
                 </div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(r.created_at).toLocaleString("ar-EG", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </div>
                 {r.notes && <div className="text-sm text-muted-foreground">{r.notes}</div>}
               </div>
               <span

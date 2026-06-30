@@ -5,6 +5,7 @@ import { RequeueControls, type UnavailableRow } from "./requeue-controls";
 type Row = {
   id: string;
   quantity: number;
+  created_at: string;
   items: { name_ar: string; category: string | null; unit: string | null } | null;
   pharmacies: { name: string } | null;
   shortage_request_requesters: { count: number }[];
@@ -19,7 +20,7 @@ export default async function UnavailablePage() {
   const { data } = await supabase
     .from("shortage_requests")
     .select(
-      "id, quantity, items(name_ar, category, unit), pharmacies(name), shortage_request_requesters(count)",
+      "id, quantity, created_at, items(name_ar, category, unit), pharmacies(name), shortage_request_requesters(count)",
     )
     .eq("status", "not_found")
     .order("created_at", { ascending: false })
@@ -31,6 +32,7 @@ export default async function UnavailablePage() {
     category: r.items?.category ?? null,
     unit: r.items?.unit ?? null,
     quantity: r.quantity,
+    createdAt: r.created_at,
     pharmacy: r.pharmacies?.name ?? null,
     requesters: r.shortage_request_requesters?.[0]?.count ?? 1,
   }));

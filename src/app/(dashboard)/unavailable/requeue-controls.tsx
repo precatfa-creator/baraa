@@ -13,6 +13,7 @@ export type UnavailableRow = {
   category: string | null;
   unit: string | null;
   quantity: number;
+  createdAt: string;
   pharmacy: string | null;
   requesters: number;
 };
@@ -75,6 +76,7 @@ export function RequeueControls({ rows, canHandle }: { rows: UnavailableRow[]; c
               <th className="p-3 text-start font-medium">الصنف</th>
               <th className="p-3 text-start font-medium">التصنيف</th>
               <th className="p-3 text-start font-medium">الصيدلية</th>
+              <th className="p-3 text-start font-medium">التاريخ</th>
             </tr>
           </thead>
           <tbody>
@@ -100,11 +102,17 @@ export function RequeueControls({ rows, canHandle }: { rows: UnavailableRow[]; c
                 </td>
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{r.pharmacy ?? "—"}</td>
+                <td className="whitespace-nowrap p-3 text-xs text-muted-foreground">
+                  {new Date(r.createdAt).toLocaleString("ar-EG", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
+                </td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={canHandle ? 4 : 3} className="p-6 text-center text-muted-foreground">
+                <td colSpan={canHandle ? 5 : 4} className="p-6 text-center text-muted-foreground">
                   لا توجد أصناف غير متوفرة.
                 </td>
               </tr>

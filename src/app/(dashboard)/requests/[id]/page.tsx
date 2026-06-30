@@ -55,6 +55,12 @@ export default async function RequestDetailPage({
             <div className="text-sm text-muted-foreground">
               {pharmacy?.name} · الأولوية: {priorityLabel[request.priority] ?? request.priority}
             </div>
+            <div className="text-xs text-muted-foreground">
+              {new Date(request.created_at).toLocaleString("ar-EG", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </div>
             {request.notes && <div className="text-sm text-muted-foreground">{request.notes}</div>}
           </div>
           <span className={`rounded-full px-2 py-1 text-xs ${statusBadgeClass[status]}`}>
