@@ -81,7 +81,7 @@ export default async function RequestsPage({
                   {r.pharmacies?.name} · الأولوية: {priorityLabel[r.priority] ?? r.priority}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {new Date(r.created_at).toLocaleString("ar-EG", {
+                  {new Date(r.created_at).toLocaleString("ar-EG-u-nu-latn", {
                     dateStyle: "medium",
                     timeStyle: "short",
                   })}

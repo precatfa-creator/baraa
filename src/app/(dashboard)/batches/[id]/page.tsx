@@ -72,7 +72,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
           <h1 className="text-lg font-bold">دفعة {head.code}</h1>
           <div className="text-sm text-muted-foreground">
             {head.pharmacies?.name} ·{" "}
-            {new Date(head.created_at).toLocaleString("ar-EG", {
+            {new Date(head.created_at).toLocaleString("ar-EG-u-nu-latn", {
               dateStyle: "medium",
               timeStyle: "short",
             })}

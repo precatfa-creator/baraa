@@ -56,7 +56,7 @@ export default async function RequestDetailPage({
               {pharmacy?.name} · الأولوية: {priorityLabel[request.priority] ?? request.priority}
             </div>
             <div className="text-xs text-muted-foreground">
-              {new Date(request.created_at).toLocaleString("ar-EG", {
+              {new Date(request.created_at).toLocaleString("ar-EG-u-nu-latn", {
                 dateStyle: "medium",
                 timeStyle: "short",
               })}
@@ -85,7 +85,7 @@ export default async function RequestDetailPage({
                   <span className="font-medium">{statusLabel[e.new_status as Status]}</span>
                 </span>
                 <span className="text-muted-foreground">
-                  {new Date(e.created_at).toLocaleString("ar")}
+                  {new Date(e.created_at).toLocaleString("ar-u-nu-latn")}
                 </span>
               </div>
               <div className="text-muted-foreground">

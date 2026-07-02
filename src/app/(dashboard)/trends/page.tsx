@@ -85,7 +85,7 @@ export default async function TrendsPage({
                 <td className="p-3 text-muted-foreground">{r.total_requesters}</td>
                 <td className="p-3 text-muted-foreground">{r.fulfilled_count}</td>
                 <td className="p-3 text-muted-foreground">
-                  {new Date(r.last_at).toLocaleDateString("ar-EG", { dateStyle: "medium" })}
+                  {new Date(r.last_at).toLocaleDateString("ar-EG-u-nu-latn", { dateStyle: "medium" })}
                 </td>
               </tr>
             ))}

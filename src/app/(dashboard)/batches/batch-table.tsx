@@ -148,7 +148,7 @@ export function BatchTable({
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{r.requestedBy ?? "—"}</td>
                 <td className="whitespace-nowrap p-3 text-xs text-muted-foreground">
-                  {new Date(r.createdAt).toLocaleString("ar-EG", {
+                  {new Date(r.createdAt).toLocaleString("ar-EG-u-nu-latn", {
                     dateStyle: "short",
                     timeStyle: "short",
                   })}

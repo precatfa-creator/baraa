@@ -76,7 +76,7 @@ export default async function BatchesPage({
                     <span className="text-muted-foreground"> · {b.pharmacies?.name}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {new Date(b.created_at).toLocaleString("ar-EG", {
+                    {new Date(b.created_at).toLocaleString("ar-EG-u-nu-latn", {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
