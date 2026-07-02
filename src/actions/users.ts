@@ -8,6 +8,7 @@ import { getAdminProfile } from "@/lib/auth";
 import { USERNAME_RE, ID_CODE_RE } from "@/lib/identifier";
 import { MIN_PASSWORD_LENGTH, validateNewPassword } from "@/lib/password";
 import type { AdminFormState } from "./pharmacies";
+import { recordAuditEvent } from "@/lib/audit";
 
 // Optional alternate login identifiers. username is lowercased and must contain a
 // letter (so it never collides with an all-digit id_code); id_code is 6 digits.
@@ -120,6 +121,14 @@ export async function createUser(_prev: AdminFormState, formData: FormData): Pro
     return { error: "تعذر إنشاء ملف المستخدم." };
   }
 
+  await recordAuditEvent(await createClient(), {
+    eventType: "user.created",
+    entityType: "user",
+    entityId: created.user.id,
+    action: "create",
+    summary: "Administrator created user",
+    details: { email, full_name, role, username, id_code, pharmacy_id },
+  });
   revalidatePath("/users");
   return null;
 }
@@ -180,8 +189,32 @@ export async function updateUser(_prev: AdminFormState, formData: FormData): Pro
       console.error("updateUser password:", pwErr.message);
       return { error: "تعذر تحديث كلمة المرور." };
     }
+    await recordAuditEvent(await createClient(), {
+      eventType: "auth.password_changed_by_admin",
+      entityType: "user",
+      entityId: id,
+      action: "password_changed_by_admin",
+      summary: "Administrator changed user password",
+      details: { target_user_id: id },
+    });
   }
 
+  await recordAuditEvent(await createClient(), {
+    eventType: "user.updated",
+    entityType: "user",
+    entityId: id,
+    action: "update",
+    summary: "Administrator updated user",
+    details: {
+      target_user_id: id,
+      full_name,
+      role,
+      username,
+      id_code,
+      pharmacy_id: role === "pharmacist" ? pharmacy_id : null,
+      password_changed: Boolean(password),
+    },
+  });
   revalidatePath("/users");
   return null;
 }

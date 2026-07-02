@@ -109,7 +109,7 @@ export default async function StatsPage({
       <div>
         <h1 className="flex items-center gap-2 text-xl font-bold">
           <ChartNoAxesCombined className="size-5 text-primary" />
-          Stats · الإحصائيات
+          الإحصائيات
         </h1>
         <p className="text-sm text-muted-foreground">
           نظرة إدارية شاملة على الطلبات، الشراء، الصيدليات وأداء الفريق.

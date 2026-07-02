@@ -15,6 +15,7 @@ import {
   Settings,
   UserRound,
   ChartNoAxesCombined,
+  ScrollText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const icons: Record<string, LucideIcon> = {
   "/unavailable": PackageX,
   "/trends": TrendingUp,
   "/stats": ChartNoAxesCombined,
+  "/audit": ScrollText,
   "/items": Pill,
   "/pharmacies": Building2,
   "/users": Users,

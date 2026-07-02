@@ -29,7 +29,8 @@ const salesRepNav: NavigationItem[] = [
 ];
 
 const adminNav: NavigationItem[] = [
-  { href: "/stats", label: "Stats" },
+  { href: "/stats", label: "الإحصائيات" },
+  { href: "/audit", label: "سجل النظام" },
   { href: "/pharmacies", label: "الصيدليات" },
   { href: "/users", label: "المستخدمون" },
   { href: "/assignments", label: "التعيينات" },

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { validateNewPassword } from "@/lib/password";
+import { recordAuditEvent } from "@/lib/audit";
 
 export type PasswordState = { error?: string; success?: string } | null;
 
@@ -44,5 +45,13 @@ export async function changeOwnPassword(
   const { error: signOutError } = await supabase.auth.signOut({ scope: "others" });
   if (signOutError) console.error("changeOwnPassword signOut others:", signOutError.message);
 
+  await recordAuditEvent(supabase, {
+    eventType: "auth.password_changed",
+    entityType: "user",
+    entityId: user.id,
+    action: "password_changed",
+    summary: "User changed own password",
+    details: { other_sessions_revoked: !signOutError },
+  });
   return { success: "تم تغيير كلمة المرور." };
 }
