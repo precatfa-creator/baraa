@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import * as XLSX from "xlsx";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminProfile, getCurrentProfile } from "@/lib/auth";
+import { MAX_IMPORT_ROWS } from "@/lib/item-import";
 
 // Empty optional text fields arrive as "" from forms; treat them as null.
 const optionalText = z
@@ -150,33 +150,11 @@ export async function deleteItem(id: string): Promise<{ ok: true } | { ok: false
 
 // --- Bulk import from Excel/CSV -------------------------------------------------
 
-// Map a sheet row (keyed by header text) to our fields, accepting Arabic or English
-// headers in any order/case.
-const HEADER_ALIASES = {
-  name_ar: ["name_ar", "الاسم بالعربية", "الاسم العربي", "الاسم", "اسم الصنف", "name"],
-  name_en: ["name_en", "الاسم بالإنجليزية", "english name", "english"],
-  barcode: ["barcode", "الباركود", "باركود"],
-  category: ["category", "التصنيف", "تصنيف"],
-  unit: ["unit", "الوحدة", "وحدة"],
-} as const;
-
-const norm = (s: unknown) => String(s).trim().toLowerCase();
-
-function pick(row: Record<string, unknown>, aliases: readonly string[]): string {
-  for (const key of Object.keys(row)) {
-    if (aliases.some((a) => norm(a) === norm(key))) {
-      const v = row[key];
-      return v == null ? "" : String(v).trim();
-    }
-  }
-  return "";
-}
-
 export type ImportResult = { added: number; skipped: number; errors: string[] };
 
 export async function importItems(formData: FormData): Promise<ImportResult | { error: string }> {
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) return { error: "اختر ملفًا." };
+  const serializedRows = formData.get("rows");
+  if (typeof serializedRows !== "string") return { error: "لا توجد بيانات للاستيراد." };
 
   const profile = await getCurrentProfile();
   if (!profile?.company_id) return { error: "لا يمكن تحديد الشركة." };
@@ -186,16 +164,16 @@ export async function importItems(formData: FormData): Promise<ImportResult | { 
   const companyId = profile.company_id;
   const userId = profile.id;
 
-  let rows: Record<string, unknown>[];
+  let rows: unknown;
   try {
-    const buf = new Uint8Array(await file.arrayBuffer());
-    const wb = XLSX.read(buf, { type: "array" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+    rows = JSON.parse(serializedRows);
   } catch {
-    return { error: "تعذّر قراءة الملف. تأكد أنه Excel أو CSV صالح." };
+    return { error: "بيانات المعاينة غير صالحة." };
   }
-  if (rows.length === 0) return { error: "الملف فارغ." };
+  if (!Array.isArray(rows) || rows.length === 0) return { error: "لا توجد صفوف للاستيراد." };
+  if (rows.length > MAX_IMPORT_ROWS) {
+    return { error: `الحد الأقصى للاستيراد هو ${MAX_IMPORT_ROWS} صفًا في المرة الواحدة.` };
+  }
 
   const supabase = await createClient();
   // existing barcodes in this company (RLS-scoped) → skip dups, also dedupe within the file
@@ -207,15 +185,20 @@ export async function importItems(formData: FormData): Promise<ImportResult | { 
   let skipped = 0;
 
   rows.forEach((row, i) => {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      errors.push(`صف ${i + 1}: بيانات غير صالحة.`);
+      return;
+    }
+    const values = row as Record<string, unknown>;
     const parsed = itemSchema.safeParse({
-      name_ar: pick(row, HEADER_ALIASES.name_ar),
-      name_en: pick(row, HEADER_ALIASES.name_en),
-      barcode: pick(row, HEADER_ALIASES.barcode),
-      category: pick(row, HEADER_ALIASES.category),
-      unit: pick(row, HEADER_ALIASES.unit),
+      name_ar: String(values.name_ar ?? ""),
+      name_en: String(values.name_en ?? ""),
+      barcode: String(values.barcode ?? ""),
+      category: String(values.category ?? ""),
+      unit: String(values.unit ?? ""),
     });
     if (!parsed.success) {
-      errors.push(`سطر ${i + 2}: ${parsed.error.issues[0].message}`); // +2: header row + 1-based
+      errors.push(`صف ${i + 1}: ${parsed.error.issues[0].message}`);
       return;
     }
     const barcode = parsed.data.barcode;
