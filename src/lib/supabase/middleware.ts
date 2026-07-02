@@ -25,20 +25,21 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // getUser() revalidates the token with Supabase — do not trust getSession() here.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Session JWTs use ES256, so getClaims() verifies identity locally against the
+  // cached JWKS. Unlike getUser(), this avoids an Auth-server round trip on every
+  // navigation while still refreshing expired sessions through the SSR client.
+  const { data, error } = await supabase.auth.getClaims();
+  const userId = error ? null : data?.claims?.sub;
 
   const path = request.nextUrl.pathname;
   const isLogin = path === "/login";
   const isPublicAuthRoute =
     isLogin || path === "/forgot-password" || path === "/auth/callback";
 
-  if (!user && !isPublicAuthRoute) {
+  if (!userId && !isPublicAuthRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (user && isLogin) {
+  if (userId && isLogin) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

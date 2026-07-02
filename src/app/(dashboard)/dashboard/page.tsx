@@ -25,21 +25,28 @@ export default async function DashboardPage() {
   const supabase = await createClient();
 
   // One head-count per status (no rows pulled); all RLS-scoped to the viewer.
-  const counts = await Promise.all(
-    STATUSES.map((s) =>
-      supabase.from("shortage_requests").select("id", { count: "exact", head: true }).eq("status", s),
+  // Run the cards and recent-items query in one network phase. These used to be
+  // sequential, adding a full Supabase round trip to every dashboard render.
+  const [counts, activeResult] = await Promise.all([
+    Promise.all(
+      STATUSES.map((s) =>
+        supabase
+          .from("shortage_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", s),
+      ),
     ),
-  );
+    supabase
+      .from("shortage_requests")
+      .select("id, status, quantity, items(name_ar), pharmacies(name)")
+      .in("status", ["missing", "in_purchase"])
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
   const countByStatus = Object.fromEntries(
     STATUSES.map((s, i) => [s, counts[i].count ?? 0]),
   ) as Record<Status, number>;
-
-  const { data: active } = await supabase
-    .from("shortage_requests")
-    .select("id, status, quantity, items(name_ar), pharmacies(name)")
-    .in("status", ["missing", "in_purchase"])
-    .order("created_at", { ascending: false })
-    .limit(8);
+  const active = activeResult.data;
   const recent = (active ?? []) as unknown as ActiveRow[];
 
   return (

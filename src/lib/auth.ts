@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 export type Role = "super_admin" | "company_admin" | "pharmacist" | "sales_rep";
@@ -16,7 +17,7 @@ export type Profile = {
 // pharmacy_id, is_active, full_name) — getClaims() verifies the token locally, so
 // this costs no network round-trip and no profiles query per page. The middleware
 // already refreshed/validated the session for this request.
-export async function getCurrentProfile(): Promise<Profile | null> {
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
   const claims = data?.claims as Record<string, unknown> | undefined;
@@ -35,7 +36,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     role,
     is_active: Boolean(claims.is_active),
   };
-}
+});
 
 export function isAdmin(role: Role | undefined): boolean {
   return role === "company_admin" || role === "super_admin";
