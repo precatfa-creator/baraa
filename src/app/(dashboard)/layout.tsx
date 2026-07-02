@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { logout } from "../(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { NavLinks } from "./nav-links";
+import { WorkflowRealtime } from "@/components/workflow-realtime";
 
 const roleLabel: Record<Role, string> = {
   super_admin: "مدير المنصة",
@@ -44,6 +45,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-full flex-col">
+      <WorkflowRealtime companyId={profile.company_id} />
       <header className="glass-bar sticky top-0 z-20">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <span className="text-lg font-bold text-primary">براء</span>
