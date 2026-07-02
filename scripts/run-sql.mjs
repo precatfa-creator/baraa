@@ -1,16 +1,24 @@
 // Run SQL files against the database over the pooler. Docker-free test/seed harness.
-// Usage: CONN="postgresql://...pooler...:5432/postgres" node scripts/run-sql.mjs file1.sql [file2 ...]
-// Prints text result rows (pgTAP TAP lines, etc.) and NOTICEs; exits non-zero on error or a failing test.
+// Connection comes from CONN, or SUPABASE_DB_URL in .env.local (so no secret in the command).
+// Usage: node scripts/run-sql.mjs file1.sql [file2 ...]
 import { readFileSync } from "node:fs";
 import pg from "pg";
 
+// Load .env.local so SUPABASE_DB_URL is available without an inline CONN.
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // no .env.local — rely on an already-exported CONN/SUPABASE_DB_URL
+}
+
+const conn = process.env.CONN || process.env.SUPABASE_DB_URL;
 const files = process.argv.slice(2);
-if (!process.env.CONN) {
-  console.error("Set CONN to the Supabase session-pooler connection string.");
+if (!conn) {
+  console.error("Set CONN or SUPABASE_DB_URL (session-pooler connection string).");
   process.exit(2);
 }
 
-const client = new pg.Client({ connectionString: process.env.CONN });
+const client = new pg.Client({ connectionString: conn });
 client.on("notice", (n) => console.log("NOTICE:", n.message));
 await client.connect();
 await client.query("set search_path = public, extensions");
