@@ -29,6 +29,7 @@ export type BatchRow = {
   createdAt: string;
   requesters: string[];
   purchaseSource: string | null;
+  purchasedBy: string | null;
 };
 
 export function BatchTable({
@@ -130,6 +131,7 @@ export function BatchTable({
               <th className="p-3 text-start font-medium">التصنيف</th>
               <th className="p-3 text-start font-medium">الصيادلة</th>
               <th className="p-3 text-start font-medium">جهة الشراء</th>
+              <th className="p-3 text-start font-medium">اشترى بواسطة</th>
               <th className="p-3 text-start font-medium">التاريخ</th>
               <th className="p-3 text-start font-medium">
                 {canMark && !splitMode ? "تم الشراء" : "الحالة"}
@@ -163,6 +165,7 @@ export function BatchTable({
                     editable={canHandle && status !== "open"}
                   />
                 </td>
+                <td className="p-3 text-muted-foreground">{r.purchasedBy ?? "—"}</td>
                 <td className="whitespace-nowrap p-3 text-xs text-muted-foreground">
                   {new Date(r.createdAt).toLocaleString("ar-EG-u-nu-latn", {
                     dateStyle: "short",
@@ -191,7 +194,7 @@ export function BatchTable({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={splitMode ? 7 : 6} className="p-6 text-center text-muted-foreground">
+                <td colSpan={splitMode ? 8 : 7} className="p-6 text-center text-muted-foreground">
                   لا أصناف في هذه الدفعة.
                 </td>
               </tr>

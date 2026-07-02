@@ -11,6 +11,7 @@ type BatchRow = {
   created_at: string;
   pharmacy_id: string;
   pharmacies: { name: string } | null;
+  profiles: { full_name: string } | null;
 };
 
 type AggItem = {
@@ -30,7 +31,9 @@ export default async function BatchesPage({
   const supabase = await createClient();
   let query = supabase
     .from("batches")
-    .select("id, code, status, created_at, pharmacy_id, pharmacies(name)")
+    .select(
+      "id, code, status, created_at, pharmacy_id, pharmacies(name), profiles!batches_taken_by_fkey(full_name)",
+    )
     .order("created_at", { ascending: false })
     .limit(50);
   if (active) query = query.eq("status", active);
@@ -86,6 +89,11 @@ export default async function BatchesPage({
                   {a.contributors.size > 0 && (
                     <div className="text-sm text-muted-foreground">
                       الصيادلة: {[...a.contributors].join("، ")}
+                    </div>
+                  )}
+                  {b.profiles?.full_name && (
+                    <div className="text-sm text-muted-foreground">
+                      المندوب المسؤول: {b.profiles.full_name}
                     </div>
                   )}
                 </div>

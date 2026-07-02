@@ -16,6 +16,7 @@ type BatchHead = {
   created_at: string;
   default_purchase_source: string | null;
   pharmacies: { name: string } | null;
+  profiles: { full_name: string } | null;
 };
 
 type ItemRow = {
@@ -28,6 +29,7 @@ type ItemRow = {
   shortage_request_requesters: {
     profiles: { full_name: string } | null;
   }[];
+  purchased_by_profile: { full_name: string } | null;
 };
 
 type AttachmentRow = {
@@ -47,7 +49,9 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
   const supabase = await createClient();
   const { data: batch } = await supabase
     .from("batches")
-    .select("id, code, status, created_at, default_purchase_source, pharmacies(name)")
+    .select(
+      "id, code, status, created_at, default_purchase_source, pharmacies(name), profiles!batches_taken_by_fkey(full_name)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!batch) notFound();
@@ -57,7 +61,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
     supabase
       .from("shortage_requests")
       .select(
-        "id, status, quantity, purchase_source, created_at, items(name_ar, category, unit), shortage_request_requesters(profiles!shortage_request_requesters_profile_id_fkey(full_name))",
+        "id, status, quantity, purchase_source, created_at, items(name_ar, category, unit), shortage_request_requesters(profiles!shortage_request_requesters_profile_id_fkey(full_name)), purchased_by_profile:profiles!shortage_requests_purchased_by_fkey(full_name)",
       )
       .eq("batch_id", id)
       .order("created_at", { ascending: true }),
@@ -80,6 +84,7 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
       .map((requester) => requester.profiles?.full_name ?? "")
       .filter(Boolean),
     purchaseSource: r.purchase_source,
+    purchasedBy: r.purchased_by_profile?.full_name ?? null,
   }));
   const contributors = [...new Set(rows.flatMap((row) => row.requesters))];
 
@@ -123,6 +128,11 @@ export default async function BatchDetailPage({ params }: { params: Promise<{ id
             <div className="text-sm">
               جهة الشراء الافتراضية:{" "}
               <span className="font-medium">{head.default_purchase_source}</span>
+            </div>
+          )}
+          {head.profiles?.full_name && (
+            <div className="text-sm">
+              المندوب المسؤول: <span className="font-medium">{head.profiles.full_name}</span>
             </div>
           )}
         </div>
