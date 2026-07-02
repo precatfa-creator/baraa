@@ -3,10 +3,21 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Scissors, Check } from "lucide-react";
-import { setItemPurchased, splitBatch } from "@/actions/batches";
+import { Scissors, Check, Pencil } from "lucide-react";
+import { setItemPurchased, setItemPurchaseSource, splitBatch } from "@/actions/batches";
 import { statusLabel, statusBadgeClass, type Status, type BatchStatus } from "@/lib/workflow";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RequesterChips } from "@/components/requester-chips";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export type BatchRow = {
   id: string;
@@ -16,8 +27,8 @@ export type BatchRow = {
   quantity: number;
   status: Status;
   createdAt: string;
-  requestedBy: string | null;
-  requesters: number;
+  requesters: string[];
+  purchaseSource: string | null;
 };
 
 export function BatchTable({
@@ -117,7 +128,8 @@ export function BatchTable({
               {splitMode && <th className="p-3"></th>}
               <th className="p-3 text-start font-medium">الصنف</th>
               <th className="p-3 text-start font-medium">التصنيف</th>
-              <th className="p-3 text-start font-medium">الصيدلي</th>
+              <th className="p-3 text-start font-medium">الصيادلة</th>
+              <th className="p-3 text-start font-medium">جهة الشراء</th>
               <th className="p-3 text-start font-medium">التاريخ</th>
               <th className="p-3 text-start font-medium">
                 {canMark && !splitMode ? "تم الشراء" : "الحالة"}
@@ -139,14 +151,18 @@ export function BatchTable({
                 )}
                 <td className="p-3">
                   {r.name}
-                  {r.requesters > 1 && (
-                    <span className="ms-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                      طلبه {r.requesters}
-                    </span>
-                  )}
                 </td>
                 <td className="p-3 text-muted-foreground">{r.category ?? "—"}</td>
-                <td className="p-3 text-muted-foreground">{r.requestedBy ?? "—"}</td>
+                <td className="p-3">
+                  <RequesterChips names={r.requesters} />
+                </td>
+                <td className="p-3">
+                  <PurchaseSourceEditor
+                    requestId={r.id}
+                    source={r.purchaseSource}
+                    editable={canHandle && status !== "open"}
+                  />
+                </td>
                 <td className="whitespace-nowrap p-3 text-xs text-muted-foreground">
                   {new Date(r.createdAt).toLocaleString("ar-EG-u-nu-latn", {
                     dateStyle: "short",
@@ -175,7 +191,7 @@ export function BatchTable({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={splitMode ? 6 : 5} className="p-6 text-center text-muted-foreground">
+                <td colSpan={splitMode ? 7 : 6} className="p-6 text-center text-muted-foreground">
                   لا أصناف في هذه الدفعة.
                 </td>
               </tr>
@@ -184,5 +200,69 @@ export function BatchTable({
         </table>
       </div>
     </div>
+  );
+}
+
+function PurchaseSourceEditor({
+  requestId,
+  source,
+  editable,
+}: {
+  requestId: string;
+  source: string | null;
+  editable: boolean;
+}) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(source ?? "");
+  const [pending, start] = useTransition();
+
+  if (!editable) return <span className="text-muted-foreground">{source ?? "—"}</span>;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button variant="ghost" size="sm" className="h-auto max-w-48 justify-start px-2 py-1" />
+        }
+      >
+        <span className="truncate">{source ?? "تحديد الجهة"}</span>
+        <Pencil className="size-3" />
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>تعديل جهة شراء الصنف</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2">
+          <Label htmlFor={`purchase-source-${requestId}`}>الشركة أو المكان</Label>
+          <Input
+            id={`purchase-source-${requestId}`}
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            maxLength={200}
+            autoFocus
+          />
+        </div>
+        <DialogFooter>
+          <Button
+            disabled={pending || !value.trim()}
+            onClick={() =>
+              start(async () => {
+                const result = await setItemPurchaseSource(requestId, value);
+                if (!result.ok) {
+                  toast.error(result.error);
+                  return;
+                }
+                toast.success("تم تحديث جهة الشراء.");
+                setOpen(false);
+                router.refresh();
+              })
+            }
+          >
+            {pending ? "جارٍ الحفظ…" : "حفظ"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

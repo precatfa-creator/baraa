@@ -4,6 +4,7 @@ import { getCurrentProfile } from "@/lib/auth";
 import { statusLabel, statusBadgeClass, priorityLabel, type Status } from "@/lib/workflow";
 import { CreateRequestDialog } from "./create-request-dialog";
 import { TransitionButtons } from "./transition-buttons";
+import { RequesterChips } from "@/components/requester-chips";
 
 const STATUSES: Status[] = ["missing", "in_purchase", "fulfilled", "cancelled"];
 
@@ -16,7 +17,9 @@ type RequestRow = {
   created_at: string;
   items: { name_ar: string } | null;
   pharmacies: { name: string } | null;
-  shortage_request_requesters: { count: number }[];
+  shortage_request_requesters: {
+    profiles: { full_name: string } | null;
+  }[];
 };
 
 export default async function RequestsPage({
@@ -35,7 +38,7 @@ export default async function RequestsPage({
   let query = supabase
     .from("shortage_requests")
     .select(
-      "id, status, quantity, priority, notes, created_at, items(name_ar), pharmacies(name), shortage_request_requesters(count)",
+      "id, status, quantity, priority, notes, created_at, items(name_ar), pharmacies(name), shortage_request_requesters(profiles!shortage_request_requesters_profile_id_fkey(full_name))",
     )
     .order("created_at", { ascending: false })
     .limit(50);
@@ -71,11 +74,6 @@ export default async function RequestsPage({
                   <Link href={`/requests/${r.id}`} className="font-medium hover:underline">
                     {r.items?.name_ar ?? "—"}
                   </Link>
-                  {(r.shortage_request_requesters?.[0]?.count ?? 1) > 1 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                      طلبه {r.shortage_request_requesters[0].count}
-                    </span>
-                  )}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {r.pharmacies?.name} · الأولوية: {priorityLabel[r.priority] ?? r.priority}
@@ -87,6 +85,11 @@ export default async function RequestsPage({
                   })}
                 </div>
                 {r.notes && <div className="text-sm text-muted-foreground">{r.notes}</div>}
+                <RequesterChips
+                  names={r.shortage_request_requesters
+                    .map((requester) => requester.profiles?.full_name ?? "")
+                    .filter(Boolean)}
+                />
               </div>
               <span
                 className={`rounded-full px-2 py-1 text-xs ${statusBadgeClass[r.status]}`}

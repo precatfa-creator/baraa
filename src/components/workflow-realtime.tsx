@@ -8,6 +8,7 @@ const WORKFLOW_TABLES = [
   "shortage_requests",
   "shortage_request_requesters",
   "batches",
+  "batch_attachments",
 ] as const;
 
 export function WorkflowRealtime({ companyId }: { companyId: string | null }) {

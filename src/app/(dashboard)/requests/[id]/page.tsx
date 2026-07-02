@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { statusLabel, statusBadgeClass, priorityLabel, type Status } from "@/lib/workflow";
 import { TransitionButtons } from "../transition-buttons";
+import { RequesterChips } from "@/components/requester-chips";
 
 type HistoryRow = {
   id: string;
@@ -26,7 +27,9 @@ export default async function RequestDetailPage({
   // RLS scopes this to requests the viewer may see; anything else returns no row.
   const { data: request } = await supabase
     .from("shortage_requests")
-    .select("id, status, quantity, priority, notes, created_at, items(name_ar), pharmacies(name)")
+    .select(
+      "id, status, quantity, priority, notes, created_at, items(name_ar), pharmacies(name), shortage_request_requesters(profiles!shortage_request_requesters_profile_id_fkey(full_name))",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!request) notFound();
@@ -41,6 +44,9 @@ export default async function RequestDetailPage({
   const pharmacy = request.pharmacies as unknown as { name: string } | null;
   const status = request.status as Status;
   const events = (history ?? []) as unknown as HistoryRow[];
+  const requesters = request.shortage_request_requesters as unknown as {
+    profiles: { full_name: string } | null;
+  }[];
 
   return (
     <div className="space-y-6">
@@ -62,6 +68,9 @@ export default async function RequestDetailPage({
               })}
             </div>
             {request.notes && <div className="text-sm text-muted-foreground">{request.notes}</div>}
+            <RequesterChips
+              names={requesters.map((requester) => requester.profiles?.full_name ?? "")}
+            />
           </div>
           <span className={`rounded-full px-2 py-1 text-xs ${statusBadgeClass[status]}`}>
             {statusLabel[status]}

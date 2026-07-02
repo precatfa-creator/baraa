@@ -19,7 +19,11 @@ export function TransitionButtons({
 }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
-  const transitions = availableTransitions(role, status);
+  // Request cards are informational; purchasing is managed from batches.
+  // Keep only the explicit cancellation action here.
+  const transitions = availableTransitions(role, status).filter((transition) => {
+    return transition.to === "cancelled";
+  });
   if (transitions.length === 0) return null;
 
   function run(to: Status, needsNote?: boolean) {
