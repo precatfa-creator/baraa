@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { login, type LoginState } from "../actions";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +35,12 @@ export default function LoginPage() {
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? "جارٍ الدخول…" : "تسجيل الدخول"}
         </Button>
+        <Link
+          href="/forgot-password"
+          className="block text-center text-sm text-primary hover:underline"
+        >
+          نسيت كلمة المرور؟
+        </Link>
       </form>
     </div>
   );

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAdminProfile, type Role } from "@/lib/auth";
 import { setUserActive } from "@/actions/users";
 import { ActiveToggle } from "@/components/active-toggle";
-import { UserDialog } from "./user-dialog";
+import { UserDialog, type UserFields } from "./user-dialog";
 
 const roleLabel: Record<Role, string> = {
   super_admin: "مدير المنصة",
@@ -20,7 +20,7 @@ export default async function UsersPage() {
   const [{ data: users }, { data: pharmacies }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, username, id_code, role, is_active, pharmacies(name)")
+      .select("id, full_name, username, id_code, role, pharmacy_id, is_active, pharmacies(name)")
       .order("full_name"),
     supabase.from("pharmacies").select("id, name").eq("is_active", true).order("name"),
   ]);
@@ -31,6 +31,7 @@ export default async function UsersPage() {
     username: string | null;
     id_code: string | null;
     role: Role;
+    pharmacy_id: string | null;
     is_active: boolean;
     pharmacies: { name: string } | null;
   }[];
@@ -65,10 +66,19 @@ export default async function UsersPage() {
                 <td className="p-3 text-muted-foreground">{u.pharmacies?.name ?? "—"}</td>
                 <td className="p-3">{u.is_active ? "نشط" : "متوقف"}</td>
                 <td className="p-3 text-end">
-                  {/* No self-deactivate; the action also guards this. */}
-                  {u.id !== admin.id && (
-                    <ActiveToggle id={u.id} active={u.is_active} action={setUserActive} />
-                  )}
+                  <div className="flex justify-end gap-1">
+                    <UserDialog
+                      pharmacies={pharmacies ?? []}
+                      user={u as UserFields}
+                      triggerLabel="تعديل"
+                      triggerVariant="ghost"
+                      triggerSize="sm"
+                    />
+                    {/* No self-deactivate; the action also guards this. */}
+                    {u.id !== admin.id && (
+                      <ActiveToggle id={u.id} active={u.is_active} action={setUserActive} />
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -1,11 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isIdCode } from "@/lib/identifier";
+import { validateNewPassword } from "@/lib/password";
 
 export type LoginState = { error: string } | null;
+export type RecoveryState = { error?: string; success?: string } | null;
 
 // Map a username / id_code login identifier to the account's email. Uses the
 // service-role client because the caller is anonymous (RLS blocks reading other
@@ -20,6 +23,17 @@ async function resolveEmail(identifier: string): Promise<string | null> {
   if (!prof) return null;
   const { data } = await svc.auth.admin.getUserById(prof.id);
   return data.user?.email ?? null;
+}
+
+async function requestOrigin(): Promise<string> {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL).origin;
+  }
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? "https";
+  if (!host) throw new Error("Cannot determine password recovery origin");
+  return `${protocol}://${host}`;
 }
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
@@ -52,6 +66,60 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   }
 
   redirect("/dashboard");
+}
+
+export async function requestPasswordReset(
+  _prev: RecoveryState,
+  formData: FormData,
+): Promise<RecoveryState> {
+  const identifier = String(formData.get("identifier") ?? "").trim();
+  if (!identifier) return { error: "أدخل البريد أو اسم المستخدم أو الرمز." };
+
+  const email = await resolveEmail(identifier);
+  if (email) {
+    const supabase = await createClient();
+    const origin = await requestOrigin();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/auth/callback`,
+    });
+    // Keep the response generic so this form cannot enumerate accounts.
+    if (error) console.error("requestPasswordReset:", error.message);
+  }
+
+  return {
+    success: "إذا كانت البيانات صحيحة، أرسلنا رابط تغيير كلمة المرور إلى البريد المرتبط بالحساب.",
+  };
+}
+
+export async function completePasswordReset(
+  _prev: RecoveryState,
+  formData: FormData,
+): Promise<RecoveryState> {
+  const password = String(formData.get("password") ?? "");
+  const confirmation = String(formData.get("password_confirm") ?? "");
+  const validationError = validateNewPassword(password, confirmation);
+  if (validationError) return { error: validationError };
+
+  const cookieStore = await cookies();
+  if (cookieStore.get("password_recovery")?.value !== "1") {
+    return { error: "رابط الاستعادة غير صالح أو انتهت صلاحيته." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "رابط الاستعادة غير صالح أو انتهت صلاحيته." };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    console.error("completePasswordReset:", error.message);
+    return { error: "تعذر تغيير كلمة المرور. اطلب رابطًا جديدًا." };
+  }
+
+  cookieStore.delete("password_recovery");
+  await supabase.auth.signOut();
+  return { success: "تم تغيير كلمة المرور. يمكنك الآن تسجيل الدخول." };
 }
 
 export async function logout() {

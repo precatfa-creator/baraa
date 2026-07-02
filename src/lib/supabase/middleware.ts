@@ -32,8 +32,10 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isLogin = path === "/login";
+  const isPublicAuthRoute =
+    isLogin || path === "/forgot-password" || path === "/auth/callback";
 
-  if (!user && !isLogin) {
+  if (!user && !isPublicAuthRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
   if (user && isLogin) {

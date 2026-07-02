@@ -19,6 +19,7 @@ const baseNav = [
   { href: "/unavailable", label: "غير المتوفرة" },
   { href: "/trends", label: "الأكثر طلبًا" },
   { href: "/items", label: "الأصناف" },
+  { href: "/account", label: "حسابي" },
 ];
 
 // Admin-only management screens (Phase 7).

@@ -13,6 +13,7 @@ import {
   Users,
   Network,
   Settings,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ const icons: Record<string, LucideIcon> = {
   "/users": Users,
   "/assignments": Network,
   "/settings": Settings,
+  "/account": UserRound,
 };
 
 export function NavLinks({ items }: { items: { href: string; label: string }[] }) {
