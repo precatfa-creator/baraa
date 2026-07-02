@@ -14,6 +14,7 @@ import {
   Network,
   Settings,
   UserRound,
+  ChartNoAxesCombined,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ const icons: Record<string, LucideIcon> = {
   "/batches": ClipboardList,
   "/unavailable": PackageX,
   "/trends": TrendingUp,
+  "/stats": ChartNoAxesCombined,
   "/items": Pill,
   "/pharmacies": Building2,
   "/users": Users,

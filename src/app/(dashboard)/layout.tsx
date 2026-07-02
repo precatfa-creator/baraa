@@ -31,6 +31,7 @@ const pharmacistNav = [
 
 // Admin-only management screens (Phase 7).
 const adminNav = [
+  { href: "/stats", label: "Stats" },
   { href: "/pharmacies", label: "الصيدليات" },
   { href: "/users", label: "المستخدمون" },
   { href: "/assignments", label: "التعيينات" },
