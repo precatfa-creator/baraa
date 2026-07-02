@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import * as XLSX from "xlsx";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth";
+import { getAdminProfile, getCurrentProfile } from "@/lib/auth";
 
 // Empty optional text fields arrive as "" from forms; treat them as null.
 const optionalText = z
@@ -111,6 +111,17 @@ export async function updateItem(_prev: ItemFormState, formData: FormData): Prom
   }
   revalidatePath("/items");
   return null;
+}
+
+// Remove/restore an item (soft-delete via is_active; hard delete is unsafe —
+// shortage_requests.item_id references items with no cascade). RLS (items_admin_update)
+// confirms admin + same company. Deactivated items drop out of the request picker.
+export async function setItemActive(id: string, isActive: boolean): Promise<void> {
+  const admin = await getAdminProfile();
+  if (!admin) return;
+  const supabase = await createClient();
+  await supabase.from("items").update({ is_active: isActive }).eq("id", id);
+  revalidatePath("/items");
 }
 
 // --- Bulk import from Excel/CSV -------------------------------------------------

@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
+import { setItemActive } from "@/actions/items";
 import { Button } from "@/components/ui/button";
+import { ActiveToggle } from "@/components/active-toggle";
 import { ItemDialog, type ItemFields } from "./item-dialog";
 import { ImportItemsDialog } from "./import-items-dialog";
 
@@ -21,7 +23,7 @@ export default async function ItemsPage({
   const supabase = await createClient();
   let query = supabase
     .from("items")
-    .select("id, name_ar, name_en, barcode, category, unit", { count: "exact" })
+    .select("id, name_ar, name_en, barcode, category, unit, is_active", { count: "exact" })
     .order("name_ar", { ascending: true })
     .range(from, from + PAGE_SIZE - 1);
 
@@ -79,21 +81,27 @@ export default async function ItemsPage({
           </thead>
           <tbody>
             {(items ?? []).map((item) => (
-              <tr key={item.id} className="border-b last:border-0">
-                <td className="p-3">{item.name_ar}</td>
+              <tr key={item.id} className={`border-b last:border-0 ${item.is_active ? "" : "opacity-50"}`}>
+                <td className="p-3">
+                  {item.name_ar}
+                  {!item.is_active && <span className="ms-2 text-xs text-muted-foreground">(متوقف)</span>}
+                </td>
                 <td className="p-3 text-muted-foreground">{item.barcode ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{item.category ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{item.unit ?? "—"}</td>
                 {canManage && (
                   <td className="p-3 text-end">
-                    <ItemDialog
-                      item={item as ItemFields}
-                      triggerLabel="تعديل"
-                      triggerVariant="ghost"
-                      triggerSize="sm"
-                      categories={categories}
-                      units={units}
-                    />
+                    <div className="flex justify-end gap-1">
+                      <ItemDialog
+                        item={item as ItemFields}
+                        triggerLabel="تعديل"
+                        triggerVariant="ghost"
+                        triggerSize="sm"
+                        categories={categories}
+                        units={units}
+                      />
+                      <ActiveToggle id={item.id} active={item.is_active} action={setItemActive} />
+                    </div>
                   </td>
                 )}
               </tr>
