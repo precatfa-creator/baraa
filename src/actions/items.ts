@@ -131,12 +131,17 @@ export async function deleteItem(id: string): Promise<{ ok: true } | { ok: false
   const admin = await getAdminProfile();
   if (!admin) return { ok: false, error: "ليس لديك صلاحية." };
   const supabase = await createClient();
-  const { error } = await supabase.from("items").delete().eq("id", id);
+  const { error, count } = await supabase.from("items").delete({ count: "exact" }).eq("id", id);
   if (error) {
     if (error.code === "23503") {
       return { ok: false, error: "الصنف مستخدم في طلبات؛ أوقفه بدل حذفه نهائيًا." };
     }
     console.error("deleteItem:", error.code, error.message);
+    return { ok: false, error: "تعذر حذف الصنف." };
+  }
+  // RLS returns no error but 0 rows when the caller isn't allowed to delete — don't
+  // report a phantom success (e.g. if the items_admin_delete migration isn't applied).
+  if (!count) {
     return { ok: false, error: "تعذر حذف الصنف." };
   }
   revalidatePath("/items");
