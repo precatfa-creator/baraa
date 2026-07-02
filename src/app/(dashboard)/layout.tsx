@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
-import { getCurrentProfile, isAdmin, type Role } from "@/lib/auth";
+import { getCurrentProfile, type Role } from "@/lib/auth";
 import { LogOut } from "lucide-react";
 import { logout } from "../(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { NavLinks } from "./nav-links";
 import { WorkflowRealtime } from "@/components/workflow-realtime";
+import { navigationForRole } from "@/lib/navigation";
+import { PageSwipeNavigation } from "./page-swipe-navigation";
 
 const roleLabel: Record<Role, string> = {
   super_admin: "مدير المنصة",
@@ -12,31 +14,6 @@ const roleLabel: Record<Role, string> = {
   pharmacist: "صيدلي",
   sales_rep: "مندوب مبيعات",
 };
-
-const baseNav = [
-  { href: "/dashboard", label: "لوحة التحكم" },
-  { href: "/requests", label: "النواقص" },
-  { href: "/batches", label: "الدُفعات" },
-  { href: "/unavailable", label: "غير المتوفرة" },
-  { href: "/trends", label: "الأكثر طلبًا" },
-  { href: "/items", label: "الأصناف" },
-  { href: "/account", label: "حسابي" },
-];
-
-const pharmacistNav = [
-  { href: "/dashboard", label: "لوحة التحكم" },
-  { href: "/requests", label: "طلباتي" },
-  { href: "/account", label: "حسابي" },
-];
-
-// Admin-only management screens (Phase 7).
-const adminNav = [
-  { href: "/stats", label: "Stats" },
-  { href: "/pharmacies", label: "الصيدليات" },
-  { href: "/users", label: "المستخدمون" },
-  { href: "/assignments", label: "التعيينات" },
-  { href: "/settings", label: "الإعدادات" },
-];
 
 export default async function DashboardLayout({
   children,
@@ -48,12 +25,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const nav =
-    profile.role === "pharmacist"
-      ? pharmacistNav
-      : isAdmin(profile.role)
-        ? [...baseNav, ...adminNav]
-        : baseNav;
+  const nav = navigationForRole(profile.role);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -76,7 +48,7 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
+      <PageSwipeNavigation items={nav}>{children}</PageSwipeNavigation>
     </div>
   );
 }

@@ -25,6 +25,7 @@ type ActiveRow = {
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile();
+  const canOpenRequests = profile?.role !== "sales_rep";
   const supabase = await createClient();
 
   // One head-count per status (no rows pulled); all RLS-scoped to the viewer.
@@ -62,18 +63,27 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {STATUSES.map((s) => {
           const Icon = statusIcon[s];
-          return (
-            <Link
-              key={s}
-              href={`/requests?status=${s}`}
-              className="glass-panel glass-hover p-4"
-            >
+          const content = (
+            <>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold">{countByStatus[s]}</span>
                 <Icon className="size-5 text-primary" />
               </div>
               <div className="mt-1 text-sm text-muted-foreground">{statusLabel[s]}</div>
+            </>
+          );
+          return canOpenRequests ? (
+            <Link
+              key={s}
+              href={`/requests?status=${s}`}
+              className="glass-panel glass-hover p-4"
+            >
+              {content}
             </Link>
+          ) : (
+            <div key={s} className="glass-panel p-4">
+              {content}
+            </div>
           );
         })}
       </div>
@@ -81,16 +91,15 @@ export default async function DashboardPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">النواقص النشطة</h2>
-          <Link href="/requests" className="text-sm text-muted-foreground hover:underline">
-            عرض الكل
-          </Link>
+          {canOpenRequests && (
+            <Link href="/requests" className="text-sm text-muted-foreground hover:underline">
+              عرض الكل
+            </Link>
+          )}
         </div>
-        {recent.map((r) => (
-          <Link
-            key={r.id}
-            href={`/requests/${r.id}`}
-            className="glass-panel glass-hover flex items-center justify-between p-3"
-          >
+        {recent.map((r) => {
+          const content = (
+            <>
             <span className="text-sm">
               {r.items?.name_ar ?? "—"}
               <span className="text-muted-foreground"> · {r.pharmacies?.name}</span>
@@ -98,8 +107,22 @@ export default async function DashboardPage() {
             <span className={`rounded-full px-2 py-1 text-xs ${statusBadgeClass[r.status]}`}>
               {statusLabel[r.status]}
             </span>
-          </Link>
-        ))}
+            </>
+          );
+          return canOpenRequests ? (
+            <Link
+              key={r.id}
+              href={`/requests/${r.id}`}
+              className="glass-panel glass-hover flex items-center justify-between p-3"
+            >
+              {content}
+            </Link>
+          ) : (
+            <div key={r.id} className="glass-panel flex items-center justify-between p-3">
+              {content}
+            </div>
+          );
+        })}
         {recent.length === 0 && (
           <p className="glass-panel p-6 text-center text-muted-foreground">
             لا توجد نواقص نشطة.

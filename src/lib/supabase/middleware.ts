@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isRouteAllowedForRole } from "@/lib/navigation";
 
 // Refresh the auth session on every request and guard routes:
 // unauthenticated -> /login; authenticated on /login -> /dashboard.
@@ -43,15 +44,12 @@ export async function updateSession(request: NextRequest) {
   if (userId && isLogin) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
-  if (userId && userRole === "pharmacist" && !isPublicAuthRoute) {
-    const pharmacistRoute =
-      path === "/dashboard" ||
-      path === "/requests" ||
-      path.startsWith("/requests/") ||
-      path === "/account";
-    if (!pharmacistRoute) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+  if (
+    userId &&
+    !isPublicAuthRoute &&
+    !isRouteAllowedForRole(path, typeof userRole === "string" ? userRole : null)
+  ) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;
