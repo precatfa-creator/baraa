@@ -124,6 +124,25 @@ export async function setItemActive(id: string, isActive: boolean): Promise<void
   revalidatePath("/items");
 }
 
+// Permanent delete. RLS (items_admin_delete) confirms admin + same company.
+// 23503 = foreign_key_violation: item is referenced by a shortage_request; steer
+// the manager to deactivate instead of hard-delete.
+export async function deleteItem(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const admin = await getAdminProfile();
+  if (!admin) return { ok: false, error: "ليس لديك صلاحية." };
+  const supabase = await createClient();
+  const { error } = await supabase.from("items").delete().eq("id", id);
+  if (error) {
+    if (error.code === "23503") {
+      return { ok: false, error: "الصنف مستخدم في طلبات؛ أوقفه بدل حذفه نهائيًا." };
+    }
+    console.error("deleteItem:", error.code, error.message);
+    return { ok: false, error: "تعذر حذف الصنف." };
+  }
+  revalidatePath("/items");
+  return { ok: true };
+}
+
 // --- Bulk import from Excel/CSV -------------------------------------------------
 
 // Map a sheet row (keyed by header text) to our fields, accepting Arabic or English

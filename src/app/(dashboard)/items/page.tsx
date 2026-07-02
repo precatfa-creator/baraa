@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ActiveToggle } from "@/components/active-toggle";
 import { ItemDialog, type ItemFields } from "./item-dialog";
 import { ImportItemsDialog } from "./import-items-dialog";
+import { DeleteItemButton } from "./delete-item-button";
 
 const PAGE_SIZE = 20;
 
@@ -101,6 +102,7 @@ export default async function ItemsPage({
                         units={units}
                       />
                       <ActiveToggle id={item.id} active={item.is_active} action={setItemActive} />
+                      <DeleteItemButton id={item.id} name={item.name_ar} />
                     </div>
                   </td>
                 )}
