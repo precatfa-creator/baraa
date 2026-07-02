@@ -12,6 +12,7 @@ import {
   Building2,
   Users,
   Network,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const icons: Record<string, LucideIcon> = {
   "/pharmacies": Building2,
   "/users": Users,
   "/assignments": Network,
+  "/settings": Settings,
 };
 
 export function NavLinks({ items }: { items: { href: string; label: string }[] }) {

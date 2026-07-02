@@ -26,6 +26,7 @@ const adminNav = [
   { href: "/pharmacies", label: "الصيدليات" },
   { href: "/users", label: "المستخدمون" },
   { href: "/assignments", label: "التعيينات" },
+  { href: "/settings", label: "الإعدادات" },
 ];
 
 export default async function DashboardLayout({
