@@ -15,11 +15,11 @@ export default function LoginPage() {
       <form action={formAction} className="glass-panel w-full max-w-sm space-y-4 p-6">
         <h1 className="text-center text-2xl font-bold">براء</h1>
         <input
-          name="email"
-          type="email"
+          name="identifier"
+          type="text"
           required
-          autoComplete="email"
-          placeholder="البريد الإلكتروني"
+          autoComplete="username"
+          placeholder="البريد أو اسم المستخدم أو الرمز"
           className={inputClass}
         />
         <input

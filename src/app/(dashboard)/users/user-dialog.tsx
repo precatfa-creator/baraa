@@ -55,6 +55,16 @@ export function UserDialog({ pharmacies }: { pharmacies: { id: string; name: str
             <Label htmlFor="password">كلمة المرور</Label>
             <Input id="password" name="password" type="password" required autoComplete="new-password" />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="username">اسم المستخدم (اختياري)</Label>
+              <Input id="username" name="username" autoComplete="off" placeholder="مثال: ahmed01" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="id_code">الرمز (6 أرقام، اختياري)</Label>
+              <Input id="id_code" name="id_code" inputMode="numeric" maxLength={6} autoComplete="off" placeholder="123456" />
+            </div>
+          </div>
           <div className="space-y-1">
             <Label htmlFor="role">الدور</Label>
             <select

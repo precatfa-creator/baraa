@@ -20,7 +20,7 @@ export default async function UsersPage() {
   const [{ data: users }, { data: pharmacies }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, role, is_active, pharmacies(name)")
+      .select("id, full_name, username, id_code, role, is_active, pharmacies(name)")
       .order("full_name"),
     supabase.from("pharmacies").select("id, name").eq("is_active", true).order("name"),
   ]);
@@ -28,6 +28,8 @@ export default async function UsersPage() {
   const rows = (users ?? []) as unknown as {
     id: string;
     full_name: string;
+    username: string | null;
+    id_code: string | null;
     role: Role;
     is_active: boolean;
     pharmacies: { name: string } | null;
@@ -45,6 +47,8 @@ export default async function UsersPage() {
           <thead className="border-b text-muted-foreground">
             <tr>
               <th className="p-3 text-start font-medium">الاسم</th>
+              <th className="p-3 text-start font-medium">اسم المستخدم</th>
+              <th className="p-3 text-start font-medium">الرمز</th>
               <th className="p-3 text-start font-medium">الدور</th>
               <th className="p-3 text-start font-medium">الصيدلية</th>
               <th className="p-3 text-start font-medium">الحالة</th>
@@ -55,6 +59,8 @@ export default async function UsersPage() {
             {rows.map((u) => (
               <tr key={u.id} className="border-b last:border-0">
                 <td className="p-3">{u.full_name}</td>
+                <td className="p-3 text-muted-foreground">{u.username ?? "—"}</td>
+                <td className="p-3 text-muted-foreground">{u.id_code ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{roleLabel[u.role]}</td>
                 <td className="p-3 text-muted-foreground">{u.pharmacies?.name ?? "—"}</td>
                 <td className="p-3">{u.is_active ? "نشط" : "متوقف"}</td>
