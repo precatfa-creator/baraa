@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminProfile } from "@/lib/auth";
+import { KEEP_EMAIL } from "@/lib/constants";
 
 // Danger-zone bulk deletes for the Settings screen. Each action deletes the
 // explicitly-selected ids (the UI shows a checked table; the admin unchecks what
@@ -15,8 +16,6 @@ import { getAdminProfile } from "@/lib/auth";
 // ponytail: global, unscoped — add a company_id filter if the app ever multi-tenants.
 
 export type ResetResult = { ok: true; count: number } | { ok: false; error: string };
-
-export const KEEP_EMAIL = "omar@baraa.ly";
 
 // Delete selected shortage requests (status history cascades).
 export async function deleteRequests(ids: string[]): Promise<ResetResult> {

@@ -7,8 +7,8 @@ import {
   deleteItems,
   deletePharmacies,
   deleteUsers,
-  KEEP_EMAIL,
 } from "@/actions/admin-reset";
+import { KEEP_EMAIL } from "@/lib/constants";
 import { BulkDeleteDialog, type Row } from "./bulk-delete-dialog";
 
 // Embedded to-one relations come back as an object (or array in some typings) — read loosely.
