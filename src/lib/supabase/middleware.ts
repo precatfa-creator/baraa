@@ -30,6 +30,7 @@ export async function updateSession(request: NextRequest) {
   // navigation while still refreshing expired sessions through the SSR client.
   const { data, error } = await supabase.auth.getClaims();
   const userId = error ? null : data?.claims?.sub;
+  const userRole = error ? null : data?.claims?.user_role;
 
   const path = request.nextUrl.pathname;
   const isLogin = path === "/login";
@@ -41,6 +42,16 @@ export async function updateSession(request: NextRequest) {
   }
   if (userId && isLogin) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+  if (userId && userRole === "pharmacist" && !isPublicAuthRoute) {
+    const pharmacistRoute =
+      path === "/dashboard" ||
+      path === "/requests" ||
+      path.startsWith("/requests/") ||
+      path === "/account";
+    if (!pharmacistRoute) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return response;

@@ -23,6 +23,12 @@ const baseNav = [
   { href: "/account", label: "حسابي" },
 ];
 
+const pharmacistNav = [
+  { href: "/dashboard", label: "لوحة التحكم" },
+  { href: "/requests", label: "طلباتي" },
+  { href: "/account", label: "حسابي" },
+];
+
 // Admin-only management screens (Phase 7).
 const adminNav = [
   { href: "/pharmacies", label: "الصيدليات" },
@@ -41,7 +47,12 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const nav = isAdmin(profile.role) ? [...baseNav, ...adminNav] : baseNav;
+  const nav =
+    profile.role === "pharmacist"
+      ? pharmacistNav
+      : isAdmin(profile.role)
+        ? [...baseNav, ...adminNav]
+        : baseNav;
 
   return (
     <div className="flex min-h-full flex-col">

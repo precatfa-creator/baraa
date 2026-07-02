@@ -11,6 +11,7 @@ insert into auth.users (instance_id, id, aud, role, email, created_at, updated_a
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000002','authenticated','authenticated','adm@a.test',now(),now()),
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000003','authenticated','authenticated','rep@a.test',now(),now()),
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000004','authenticated','authenticated','rep2@a.test',now(),now()),
+  ('00000000-0000-0000-0000-000000000000','a0000000-0000-0000-0000-000000000005','authenticated','authenticated','pha2@a.test',now(),now()),
   ('00000000-0000-0000-0000-000000000000','b0000000-0000-0000-0000-000000000001','authenticated','authenticated','pha@b.test',now(),now()),
   ('00000000-0000-0000-0000-000000000000','00000000-0000-0000-0000-000000000009','authenticated','authenticated','super@x.test',now(),now());
 
@@ -27,6 +28,7 @@ insert into public.profiles (id, company_id, pharmacy_id, full_name, role) value
   ('a0000000-0000-0000-0000-000000000002','a1111111-1111-1111-1111-111111111111',null,'Admin A','company_admin'),
   ('a0000000-0000-0000-0000-000000000003','a1111111-1111-1111-1111-111111111111',null,'Rep A','sales_rep'),
   ('a0000000-0000-0000-0000-000000000004','a1111111-1111-1111-1111-111111111111',null,'Rep A2','sales_rep'),
+  ('a0000000-0000-0000-0000-000000000005','a1111111-1111-1111-1111-111111111111','a2222222-2222-2222-2222-222222222222','Pharmacist A2','pharmacist'),
   ('b0000000-0000-0000-0000-000000000001','b1111111-1111-1111-1111-111111111111','b2222222-2222-2222-2222-222222222222','Pharmacist B','pharmacist'),
   ('00000000-0000-0000-0000-000000000009',null,null,'Super','super_admin');
 
@@ -40,7 +42,20 @@ insert into public.sales_rep_assignments (company_id, sales_rep_id, pharmacy_id)
 insert into public.shortage_requests (id, company_id, pharmacy_id, item_id, requested_by, status) values
   ('a4444444-4444-4444-4444-444444444444','a1111111-1111-1111-1111-111111111111',
    'a2222222-2222-2222-2222-222222222222','a3333333-3333-3333-3333-333333333333',
-   'a0000000-0000-0000-0000-000000000001','missing');
+   'a0000000-0000-0000-0000-000000000001','missing'),
+  ('a4444444-4444-4444-4444-444444444445','a1111111-1111-1111-1111-111111111111',
+   'a2222222-2222-2222-2222-222222222222','a3333333-3333-3333-3333-333333333333',
+   'a0000000-0000-0000-0000-000000000005','missing'),
+  ('a4444444-4444-4444-4444-444444444446','a1111111-1111-1111-1111-111111111111',
+   'a2222222-2222-2222-2222-222222222222','a3333333-3333-3333-3333-333333333333',
+   'a0000000-0000-0000-0000-000000000005','missing');
+
+insert into public.shortage_request_requesters
+  (shortage_request_id, company_id, profile_id)
+values
+  ('a4444444-4444-4444-4444-444444444446',
+   'a1111111-1111-1111-1111-111111111111',
+   'a0000000-0000-0000-0000-000000000001');
 
 -- claim templates
 create temporary table jwt(label text primary key, claims text);
@@ -56,7 +71,7 @@ grant select on jwt to authenticated; -- the claim lookup runs while role=authen
 -- ---- READ isolation ----
 set local role authenticated;
 select set_config('request.jwt.claims', (select claims from jwt where label='pharmA'), true);
-select is((select count(*) from shortage_requests)::bigint, 1::bigint, 'pharmacist A sees own-pharmacy request');
+select is((select count(*) from shortage_requests)::bigint, 2::bigint, 'pharmacist sees own and shared requests, not colleague-only request');
 select is((select count(*) from items)::bigint, 1::bigint, 'pharmacist A sees own-company items');
 reset role;
 
@@ -68,12 +83,12 @@ reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claims', (select claims from jwt where label='adminA'), true);
-select is((select count(*) from shortage_requests)::bigint, 1::bigint, 'admin A sees whole-tenant request');
+select is((select count(*) from shortage_requests)::bigint, 3::bigint, 'admin A sees whole-tenant requests');
 reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claims', (select claims from jwt where label='repA'), true);
-select is((select count(*) from shortage_requests)::bigint, 1::bigint, 'assigned rep sees the request');
+select is((select count(*) from shortage_requests)::bigint, 3::bigint, 'assigned rep sees the requests');
 reset role;
 
 set local role authenticated;
@@ -83,7 +98,14 @@ reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claims', (select claims from jwt where label='super'), true);
-select is((select count(*) from shortage_requests)::bigint, 1::bigint, 'super_admin crosses tenants');
+select is((
+  select count(*) from shortage_requests
+  where id in (
+    'a4444444-4444-4444-4444-444444444444',
+    'a4444444-4444-4444-4444-444444444445',
+    'a4444444-4444-4444-4444-444444444446'
+  )
+)::bigint, 3::bigint, 'super_admin crosses tenants');
 reset role;
 
 -- ---- WRITE / workflow enforcement ----

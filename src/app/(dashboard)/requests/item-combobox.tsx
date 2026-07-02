@@ -58,26 +58,25 @@ export function ItemCombobox() {
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        // Delay so a click on an option registers before the list closes.
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={(event) => {
+          const next = event.relatedTarget;
+          if (!(next instanceof Node) || !event.currentTarget.parentElement?.contains(next)) {
+            setOpen(false);
+          }
+        }}
         autoComplete="off"
       />
       {open && results.length > 0 && (
-        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-auto rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg">
+        <ul className="absolute z-50 mt-1 max-h-48 w-full touch-pan-y overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg">
           {results.map((item) => (
             <li key={item.id}>
               <button
                 type="button"
                 className="w-full rounded-md px-3 py-2 text-start text-sm hover:bg-accent"
-                // Commit on pointer-down (covers mouse + touch) and preventDefault so
-                // the input never blurs: on touch the blur dismisses the keyboard and
-                // reflows the layout, moving this option out from under the tap before
-                // the click lands, which dropped the selection. onClick stays for
-                // keyboard/programmatic activation.
-                onPointerDown={(e) => {
-                  e.preventDefault();
-                  choose(item);
-                }}
+                // Keep mouse focus in the input, but choose only on click. A touch
+                // pointer-down may become a scroll, so selecting there picked items
+                // accidentally while users swiped through the list.
+                onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(item)}
               >
                 {item.name_ar}

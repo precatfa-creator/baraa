@@ -2,6 +2,8 @@ import Link from "next/link";
 import { AlertTriangle, ShoppingCart, CheckCircle2, XCircle, PackageX, type LucideIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { statusLabel, statusBadgeClass, type Status } from "@/lib/workflow";
+import { getCurrentProfile } from "@/lib/auth";
+import { CreateRequestDialog } from "../requests/create-request-dialog";
 
 const STATUSES: Status[] = ["missing", "in_purchase", "fulfilled", "cancelled"];
 
@@ -22,6 +24,7 @@ type ActiveRow = {
 };
 
 export default async function DashboardPage() {
+  const profile = await getCurrentProfile();
   const supabase = await createClient();
 
   // One head-count per status (no rows pulled); all RLS-scoped to the viewer.
@@ -51,7 +54,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">لوحة التحكم</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-bold">لوحة التحكم</h1>
+        {profile?.role === "pharmacist" && <CreateRequestDialog />}
+      </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {STATUSES.map((s) => {
