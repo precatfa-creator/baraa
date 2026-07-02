@@ -11,22 +11,30 @@ export type Profile = {
   is_active: boolean;
 };
 
-// The signed-in user's profile, or null if unauthenticated. RLS allows a user to read
-// their own row (profiles_select: id = auth.uid()).
+// The signed-in user's profile, or null if unauthenticated. Built entirely from the
+// JWT claims injected by public.custom_access_token_hook (user_role, company_id,
+// pharmacy_id, is_active, full_name) — getClaims() verifies the token locally, so
+// this costs no network round-trip and no profiles query per page. The middleware
+// already refreshed/validated the session for this request.
 export async function getCurrentProfile(): Promise<Profile | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data, error } = await supabase.auth.getClaims();
+  const claims = data?.claims as Record<string, unknown> | undefined;
+  const role = claims?.user_role as Role | undefined;
+  // No role claim means the token predates the hook (or it's disabled) — treat as
+  // unauthenticated rather than trusting a half-populated token.
+  if (error || !claims?.sub || !role) return null;
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, company_id, pharmacy_id, full_name, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  return (data as Profile) ?? null;
+  const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
+  return {
+    id: claims.sub as string,
+    company_id: str(claims.company_id),
+    pharmacy_id: str(claims.pharmacy_id),
+    // full_name was added to the hook later; fall back to email until tokens refresh.
+    full_name: str(claims.full_name) ?? str(claims.email) ?? "",
+    role,
+    is_active: Boolean(claims.is_active),
+  };
 }
 
 export function isAdmin(role: Role | undefined): boolean {
